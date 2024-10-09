@@ -20,5 +20,5 @@ trading_dates_df = trading_dates_df[trading_dates_df["trade_date"] <= END_DATE]
 trading_dates_df["trade_date"] = trading_dates_df["trade_date"].apply(lambda x: x.strftime("%Y%m%d"))
 
 # ---- Step 4. Save the data to `.csv` file ---- #
-trading_dates_df.to_csv("../../Data/trading_dates.csv", index=False)
+trading_dates_df.to_csv("../../../Data/trading_dates.csv", index=False)
 print(f"Save successful, total `{len(trading_dates_df)}` trading dates.")
