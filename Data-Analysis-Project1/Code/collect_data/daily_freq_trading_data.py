@@ -28,7 +28,7 @@ print(f"Before selection: Total are `{len(stock_sz_code_df)}` in sz !")
 selected_ssh_code_list, selected_ssz_code_list = [], []
 # - columns
 stock_daily_trading_factor_columns = ["股票代码", "日期", "开盘", "收盘", "最高", "最低", "成交量", "成交额", "振幅", "涨跌幅", "涨跌额", "换手率"]
-# - rename
+# - rename columns
 stock_daily_trading_factor_re_columns = {
     "股票代码": "Code", "日期": "Date",
     "开盘": "Open", "收盘": "Close", "最高": "High", "最低": "Low",
@@ -47,7 +47,8 @@ for i, stock_sh_code in enumerate(stock_sh_code_list):
         stock_sh_daily_hist_df.to_csv(f"../../../Data/daily_trading_factors/{stock_sh_code}.csv", index=False)
         print(f"Finish stock {i}: `{stock_sh_code}` !")
         selected_ssh_code_list.append(stock_sh_code)
-        break
+    else:
+        print(f"Stock {i}: `{stock_sh_code}` trading dates are not enough !")
 print(f"Total are `{len(selected_ssh_code_list)}` in sh !")
 # - sz
 stock_sz_code_list = stock_sz_code_df["Code"].values.tolist()
@@ -61,7 +62,8 @@ for i, stock_sz_code in enumerate(stock_sz_code_list):
         stock_sz_daily_hist_df.to_csv(f"../../../Data/daily_trading_factors/{stock_sz_code}.csv", index=False)
         print(f"Finish stock {i}: `{stock_sz_code}` !")
         selected_ssz_code_list.append(stock_sz_code)
-        break
+    else:
+        print(f"Stock {i}: `{stock_sz_code}` trading dates are not enough !")
 print(f"Total are `{len(selected_ssz_code_list)}` in sz !")
-# save code
+# - save selected code list
 pd.DataFrame(selected_ssh_code_list + selected_ssz_code_list, columns=["Code"]).to_csv("../../../Data/stock_code.csv", index=False)
