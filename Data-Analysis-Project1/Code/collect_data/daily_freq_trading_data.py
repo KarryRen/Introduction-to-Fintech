@@ -19,7 +19,15 @@ stock_sz_code_df["Code"] = stock_sz_code_df["Code"].apply(lambda x: str(x) + ".s
 
 # ---- Step 2. For loop to select the Code List ---- #
 selected_ssh_code_list, selected_ssz_code_list = [], []
+# - columns
 stock_daily_trading_factor_columns = ["股票代码", "日期", "开盘", "收盘", "最高", "最低", "成交量", "成交额", "振幅", "涨跌幅", "涨跌额", "换手率"]
+# - rename
+stock_daily_trading_factor_re_columns = {
+    "股票代码": "Code", "日期": "Date",
+    "开盘": "Open", "收盘": "Close", "最高": "High", "最低": "Low",
+    "成交量": "Volume", "成交额": "Amount",
+    "振幅": "Amplitude", "涨跌幅": "RF_Rate", "涨跌额": "RF_Amt", "换手率": "Turnover"
+}
 # - sh
 stock_sh_code_list = stock_sh_code_df["Code"].values.tolist()
 for stock_sh_code in stock_sh_code_list:
@@ -28,9 +36,11 @@ for stock_sh_code in stock_sh_code_list:
         stock_sh_daily_hist_df["日期"] = stock_sh_daily_hist_df["日期"].apply(lambda x: x.strftime("%Y%m%d"))
         stock_sh_daily_hist_df["股票代码"] = stock_sh_daily_hist_df["股票代码"].apply(lambda x: str(x) + ".sh")
         stock_sh_daily_hist_df = stock_sh_daily_hist_df[stock_daily_trading_factor_columns]  # adjust column sequence
-        stock_sh_daily_hist_df.to_csv(f"../../../Data/daily_trading_factors/{stock_sh_code}.csv", index=False, encoding="utf_8_sig")
+        stock_sh_daily_hist_df = stock_sh_daily_hist_df.rename(columns=stock_daily_trading_factor_re_columns)  # rename
+        stock_sh_daily_hist_df.to_csv(f"../../../Data/daily_trading_factors/{stock_sh_code}.csv", index=False)
         print(f"Finish stock `{stock_sh_code}` !")
         selected_ssh_code_list.append(stock_sh_code)
+        break
 print(f"Total are `{len(selected_ssh_code_list)}` in sh !")
 # - sz
 stock_sz_code_list = stock_sz_code_df["Code"].values.tolist()
@@ -40,7 +50,9 @@ for stock_sz_code in stock_sz_code_list:
         stock_sz_daily_hist_df["日期"] = stock_sz_daily_hist_df["日期"].apply(lambda x: x.strftime("%Y%m%d"))
         stock_sz_daily_hist_df["股票代码"] = stock_sz_daily_hist_df["股票代码"].apply(lambda x: str(x) + ".sh")
         stock_sz_daily_hist_df = stock_sz_daily_hist_df[stock_daily_trading_factor_columns]  # adjust column sequence
-        stock_sz_daily_hist_df.to_csv(f"../../../Data/daily_trading_factors/{stock_sz_code}.csv", index=False, encoding="utf_8_sig")
+        stock_sz_daily_hist_df = stock_sz_daily_hist_df.rename(columns=stock_daily_trading_factor_re_columns)  # rename
+        stock_sz_daily_hist_df.to_csv(f"../../../Data/daily_trading_factors/{stock_sz_code}.csv", index=False)
         print(f"Finish stock `{stock_sz_code}` !")
         selected_ssz_code_list.append(stock_sz_code)
+        break
 print(f"Total are `{len(selected_ssz_code_list)}` in sz !")
