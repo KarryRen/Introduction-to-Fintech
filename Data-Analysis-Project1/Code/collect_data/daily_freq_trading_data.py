@@ -2,20 +2,27 @@
 # @Time    : 2024/10/8 16:37
 # @Author  : Karry Ren
 
-""" Collect all trading data of A-share stocks, from 20000101 to 20231231. """
+""" Collect all daily freq trading data of A-share stocks, from START_DATE to END_DATE. """
 
 import akshare as ak
+import pandas as pd
+
+# ---- Step 0. Define the start_date and end_date ---- #
+START_DATE = "20100101"
+END_DATE = "20240601"
 
 # ---- Step 1. Get the stock of sh and sz ---- #
 # - sh
 stock_sh_code_df = ak.stock_info_sh_name_code(symbol="主板A股")[["证券代码"]]
 stock_sh_code_df = stock_sh_code_df.rename(columns={"证券代码": "Code"})
 stock_sh_code_df["Code"] = stock_sh_code_df["Code"].apply(lambda x: str(x) + ".sh")
+print(f"Before selection: Total are `{len(stock_sh_code_df)}` in sh !")
 # - sz
 stock_sz = ak.stock_info_sz_name_code(symbol="A股列表")
 stock_sz_code_df = stock_sz[stock_sz["板块"] == "主板"][["A股代码"]]
 stock_sz_code_df = stock_sz_code_df.rename(columns={"A股代码": "Code"})
 stock_sz_code_df["Code"] = stock_sz_code_df["Code"].apply(lambda x: str(x) + ".sz")
+print(f"Before selection: Total are `{len(stock_sz_code_df)}` in sz !")
 
 # ---- Step 2. For loop to select the Code List ---- #
 selected_ssh_code_list, selected_ssz_code_list = [], []
@@ -31,7 +38,7 @@ stock_daily_trading_factor_re_columns = {
 # - sh
 stock_sh_code_list = stock_sh_code_df["Code"].values.tolist()
 for stock_sh_code in stock_sh_code_list:
-    stock_sh_daily_hist_df = ak.stock_zh_a_hist(symbol=stock_sh_code[:6], period="daily", start_date="20000101", end_date="20240101", adjust="hfq")
+    stock_sh_daily_hist_df = ak.stock_zh_a_hist(symbol=stock_sh_code[:6], period="daily", start_date=START_DATE, end_date=END_DATE, adjust="hfq")
     if len(stock_sh_daily_hist_df) > 100:
         stock_sh_daily_hist_df["日期"] = stock_sh_daily_hist_df["日期"].apply(lambda x: x.strftime("%Y%m%d"))
         stock_sh_daily_hist_df["股票代码"] = stock_sh_daily_hist_df["股票代码"].apply(lambda x: str(x) + ".sh")
@@ -56,3 +63,5 @@ for stock_sz_code in stock_sz_code_list:
         selected_ssz_code_list.append(stock_sz_code)
         break
 print(f"Total are `{len(selected_ssz_code_list)}` in sz !")
+# save code
+pd.DataFrame(selected_ssh_code_list + selected_ssz_code_list, columns=["Code"]).to_csv("stock_code.csv", index=False)
