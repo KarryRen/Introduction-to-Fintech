@@ -44,7 +44,7 @@ for i, stock_sh_code in enumerate(stock_sh_code_list):
         stock_sh_daily_hist_df["股票代码"] = stock_sh_daily_hist_df["股票代码"].apply(lambda x: str(x) + ".sh")
         stock_sh_daily_hist_df = stock_sh_daily_hist_df[stock_daily_trading_factor_columns]  # adjust column sequence
         stock_sh_daily_hist_df = stock_sh_daily_hist_df.rename(columns=stock_daily_trading_factor_re_columns)  # rename
-        stock_sh_daily_hist_df.to_csv(f"../../../Data/daily_trading_factors/{stock_sh_code}.csv", index=False)
+        stock_sh_daily_hist_df.to_csv(f"../../../Data/daily_trading_factors/raw_data/{stock_sh_code}.csv", index=False)
         print(f"Finish stock {i}: `{stock_sh_code}` !")
         selected_ssh_code_list.append(stock_sh_code)
     else:
@@ -59,7 +59,7 @@ for i, stock_sz_code in enumerate(stock_sz_code_list):
         stock_sz_daily_hist_df["股票代码"] = stock_sz_daily_hist_df["股票代码"].apply(lambda x: str(x) + ".sh")
         stock_sz_daily_hist_df = stock_sz_daily_hist_df[stock_daily_trading_factor_columns]  # adjust column sequence
         stock_sz_daily_hist_df = stock_sz_daily_hist_df.rename(columns=stock_daily_trading_factor_re_columns)  # rename
-        stock_sz_daily_hist_df.to_csv(f"../../../Data/daily_trading_factors/{stock_sz_code}.csv", index=False)
+        stock_sz_daily_hist_df.to_csv(f"../../../Data/daily_trading_factors/raw_data/{stock_sz_code}.csv", index=False)
         print(f"Finish stock {i}: `{stock_sz_code}` !")
         selected_ssz_code_list.append(stock_sz_code)
     else:
