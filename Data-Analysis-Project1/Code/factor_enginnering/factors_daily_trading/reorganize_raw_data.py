@@ -16,7 +16,6 @@
 """
 
 import os
-
 import pandas as pd
 
 # ---- Step 1. Rate the trading dates df---- #
@@ -36,10 +35,9 @@ rf_amt_df = trading_dates_df
 turnover = trading_dates_df
 
 # ---- Step 3. For loop to read and concat ---- #
-daily_freq_trading_data_file_list = sorted(os.listdir("../../../Data/daily_trading_factors/raw_data/"))
-i = 0
+daily_freq_trading_data_file_list = sorted(os.listdir("../../../../Data/daily_trading_factors/raw_data/"))
 for i, data_file in enumerate(daily_freq_trading_data_file_list):
-    daily_freq_trading_df = pd.read_csv(f"../../../Data/daily_trading_factors/raw_data/{data_file}")
+    daily_freq_trading_df = pd.read_csv(f"../../../../Data/daily_trading_factors/raw_data/{data_file}")
     open_df = pd.merge(open_df, daily_freq_trading_df[["Date", "Open"]], how="outer", on="Date").rename(columns={"Open": data_file[:-4]})
     close_df = pd.merge(close_df, daily_freq_trading_df[["Date", "Close"]], how="outer", on="Date").rename(columns={"Close": data_file[:-4]})
     high_df = pd.merge(high_df, daily_freq_trading_df[["Date", "High"]], how="outer", on="Date").rename(columns={"High": data_file[:-4]})
@@ -53,13 +51,13 @@ for i, data_file in enumerate(daily_freq_trading_data_file_list):
     print(f"finish: {i}, {data_file}")
 
 # ---- Step 4. Save to the csv ---- #
-open_df.to_csv("../../../Data/daily_trading_factors/reorganized_factors/Open.csv", index=False)
-close_df.to_csv("../../../Data/daily_trading_factors/reorganized_factors/Close.csv", index=False)
-high_df.to_csv("../../../Data/daily_trading_factors/reorganized_factors/High.csv", index=False)
-low_df.to_csv("../../../Data/daily_trading_factors/reorganized_factors/Low.csv", index=False)
-vol_df.to_csv("../../../Data/daily_trading_factors/reorganized_factors/Volume.csv", index=False)
-amt_df.to_csv("../../../Data/daily_trading_factors/reorganized_factors/Amount.csv", index=False)
-amp_df.to_csv("../../../Data/daily_trading_factors/reorganized_factors/Amplitude.csv", index=False)
-rf_rate_df.to_csv("../../../Data/daily_trading_factors/reorganized_factors/RF_Rate.csv", index=False)
-rf_amt_df.to_csv("../../../Data/daily_trading_factors/reorganized_factors/RF_Amt.csv", index=False)
-turnover.to_csv("../../../Data/daily_trading_factors/reorganized_factors/Turnover.csv", index=False)
+open_df.to_csv("../../../../Data/daily_trading_factors/reorganized_factors/Open.csv", index=False)
+close_df.to_csv("../../../../Data/daily_trading_factors/reorganized_factors/Close.csv", index=False)
+high_df.to_csv("../../../../Data/daily_trading_factors/reorganized_factors/High.csv", index=False)
+low_df.to_csv("../../../../Data/daily_trading_factors/reorganized_factors/Low.csv", index=False)
+vol_df.to_csv("../../../../Data/daily_trading_factors/reorganized_factors/Volume.csv", index=False)
+amt_df.to_csv("../../../../Data/daily_trading_factors/reorganized_factors/Amount.csv", index=False)
+amp_df.to_csv("../../../../Data/daily_trading_factors/reorganized_factors/Amplitude.csv", index=False)
+rf_rate_df.to_csv("../../../../Data/daily_trading_factors/reorganized_factors/RF_Rate.csv", index=False)
+rf_amt_df.to_csv("../../../../Data/daily_trading_factors/reorganized_factors/RF_Amt.csv", index=False)
+turnover.to_csv("../../../../Data/daily_trading_factors/reorganized_factors/Turnover.csv", index=False)

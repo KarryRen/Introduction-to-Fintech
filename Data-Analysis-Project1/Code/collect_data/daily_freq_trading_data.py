@@ -56,7 +56,7 @@ for i, stock_sz_code in enumerate(stock_sz_code_list):
     stock_sz_daily_hist_df = ak.stock_zh_a_hist(symbol=stock_sz_code[:6], period="daily", start_date=START_DATE, end_date=END_DATE, adjust="hfq")
     if len(stock_sz_daily_hist_df) > 100:
         stock_sz_daily_hist_df["日期"] = stock_sz_daily_hist_df["日期"].apply(lambda x: x.strftime("%Y%m%d"))
-        stock_sz_daily_hist_df["股票代码"] = stock_sz_daily_hist_df["股票代码"].apply(lambda x: str(x) + ".sh")
+        stock_sz_daily_hist_df["股票代码"] = stock_sz_daily_hist_df["股票代码"].apply(lambda x: str(x) + ".sz")
         stock_sz_daily_hist_df = stock_sz_daily_hist_df[stock_daily_trading_factor_columns]  # adjust column sequence
         stock_sz_daily_hist_df = stock_sz_daily_hist_df.rename(columns=stock_daily_trading_factor_re_columns)  # rename
         stock_sz_daily_hist_df.to_csv(f"../../../Data/daily_trading_factors/raw_data/{stock_sz_code}.csv", index=False)
