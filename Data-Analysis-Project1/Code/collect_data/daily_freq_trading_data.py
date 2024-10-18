@@ -32,38 +32,41 @@ stock_daily_trading_factor_columns = ["股票代码", "日期", "开盘", "收�
 stock_daily_trading_factor_re_columns = {
     "股票代码": "Code", "日期": "Date",
     "开盘": "Open", "收盘": "Close", "最高": "High", "最低": "Low",
-    "成交量": "Volume", "成交额": "Amount",
-    "振幅": "Amplitude", "涨跌幅": "RF_Rate", "涨跌额": "RF_Amt", "换手率": "Turnover"
+    "成交量": "Volume", "成交额": "Amount", "振幅": "Amplitude",
+    "涨跌幅": "RF_Rate", "涨跌额": "RF_Amt", "换手率": "Turnover"
 }
 # - sh
 stock_sh_code_list = stock_sh_code_df["Code"].values.tolist()
 for i, stock_sh_code in enumerate(stock_sh_code_list):
     stock_sh_daily_hist_df = ak.stock_zh_a_hist(symbol=stock_sh_code[:6], period="daily", start_date=START_DATE, end_date=END_DATE, adjust="hfq")
-    if len(stock_sh_daily_hist_df) > 100:
+    if len(stock_sh_daily_hist_df) > 0:
         stock_sh_daily_hist_df["日期"] = stock_sh_daily_hist_df["日期"].apply(lambda x: x.strftime("%Y%m%d"))
-        stock_sh_daily_hist_df["股票代码"] = stock_sh_daily_hist_df["股票代码"].apply(lambda x: str(x) + ".sh")
-        stock_sh_daily_hist_df = stock_sh_daily_hist_df[stock_daily_trading_factor_columns]  # adjust column sequence
-        stock_sh_daily_hist_df = stock_sh_daily_hist_df.rename(columns=stock_daily_trading_factor_re_columns)  # rename
-        stock_sh_daily_hist_df.to_csv(f"../../../Data/daily_trading_factors/raw_data/{stock_sh_code}.csv", index=False)
-        print(f"Finish stock {i}: `{stock_sh_code}` !")
-        selected_ssh_code_list.append(stock_sh_code)
+        if stock_sh_daily_hist_df["日期"].iloc[0] == "20100104" and stock_sh_daily_hist_df["日期"].iloc[-1] == "20240531":
+            stock_sh_daily_hist_df["股票代码"] = stock_sh_daily_hist_df["股票代码"].apply(lambda x: str(x) + ".sh")
+            stock_sh_daily_hist_df = stock_sh_daily_hist_df[stock_daily_trading_factor_columns]  # adjust column sequence
+            stock_sh_daily_hist_df = stock_sh_daily_hist_df.rename(columns=stock_daily_trading_factor_re_columns)  # rename
+            stock_sh_daily_hist_df.to_csv(f"../../../Data/daily_trading_factors/raw_data/{stock_sh_code}.csv", index=False)
+            print(f"Finish stock {i}: `{stock_sh_code}` !")
+            selected_ssh_code_list.append(stock_sh_code)
+        else:
+            print(f"Stock {i}: `{stock_sh_code}` trading dates are not enough !")
     else:
-        print(f"Stock {i}: `{stock_sh_code}` trading dates are not enough !")
+        print(f"Stock {i}: `{stock_sh_code}` No trading dates are in the period of {START_DATE} to {END_DATE} !")
 print(f"Total are `{len(selected_ssh_code_list)}` in sh !")
 # - sz
 stock_sz_code_list = stock_sz_code_df["Code"].values.tolist()
 for i, stock_sz_code in enumerate(stock_sz_code_list):
     stock_sz_daily_hist_df = ak.stock_zh_a_hist(symbol=stock_sz_code[:6], period="daily", start_date=START_DATE, end_date=END_DATE, adjust="hfq")
-    if len(stock_sz_daily_hist_df) > 100:
-        stock_sz_daily_hist_df["日期"] = stock_sz_daily_hist_df["日期"].apply(lambda x: x.strftime("%Y%m%d"))
-        stock_sz_daily_hist_df["股票代码"] = stock_sz_daily_hist_df["股票代码"].apply(lambda x: str(x) + ".sz")
-        stock_sz_daily_hist_df = stock_sz_daily_hist_df[stock_daily_trading_factor_columns]  # adjust column sequence
-        stock_sz_daily_hist_df = stock_sz_daily_hist_df.rename(columns=stock_daily_trading_factor_re_columns)  # rename
-        stock_sz_daily_hist_df.to_csv(f"../../../Data/daily_trading_factors/raw_data/{stock_sz_code}.csv", index=False)
-        print(f"Finish stock {i}: `{stock_sz_code}` !")
-        selected_ssz_code_list.append(stock_sz_code)
+    if len(stock_sz_daily_hist_df) > 0:
+        if stock_sz_daily_hist_df["日期"].iloc[0] == "20100104" and stock_sz_daily_hist_df["日期"].iloc[-1] == "20240531":
+            stock_sz_daily_hist_df["股票代码"] = stock_sz_daily_hist_df["股票代码"].apply(lambda x: str(x) + ".sz")
+            stock_sz_daily_hist_df = stock_sz_daily_hist_df[stock_daily_trading_factor_columns]  # adjust column sequence
+            stock_sz_daily_hist_df = stock_sz_daily_hist_df.rename(columns=stock_daily_trading_factor_re_columns)  # rename
+            stock_sz_daily_hist_df.to_csv(f"../../../Data/daily_trading_factors/raw_data/{stock_sz_code}.csv", index=False)
+            print(f"Finish stock {i}: `{stock_sz_code}` !")
+            selected_ssz_code_list.append(stock_sz_code)
+        else:
+            print(f"Stock {i}: `{stock_sz_code}` trading dates are not enough !")
     else:
-        print(f"Stock {i}: `{stock_sz_code}` trading dates are not enough !")
+        print(f"Stock {i}: `{stock_sz_code}` No trading dates are in the period of {START_DATE} to {END_DATE} !")
 print(f"Total are `{len(selected_ssz_code_list)}` in sz !")
-# - save selected code list
-pd.DataFrame(selected_ssh_code_list + selected_ssz_code_list, columns=["Code"]).to_csv("../../../Data/stock_code.csv", index=False)
