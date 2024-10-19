@@ -1,10 +1,14 @@
-"""
-受限于公司文件，有部分股票不在其中，导致部分股票没有33号因子
-"""
+# -*- coding: utf-8 -*-
+# @Time    : 2024/10/11 18:22
+# @Author  : YiMing Jiang
+
+""" 受限于公司文件，有部分股票不在其中，导致部分股票没有33号因子 """
+
 import pandas as pd
 from util import diff
 from util import format_reform
 import numpy as np
+
 # 33. herf
 # 季度频率。行业内各公司的销售百分比的平方和。
 
@@ -18,10 +22,10 @@ df3 = pd.merge(df1, df2, on=['证券代码'], how='left')
 df3 = diff(df3, col=['营业总收入'])
 
 df4 = df3[['行业代码C', '统计截止日期', '营业总收入']].groupby(['行业代码C', '统计截止日期']).sum()
-df4.rename({'营业总收入':'行业营业总收入'}, axis='columns', inplace=True)
+df4.rename({'营业总收入': '行业营业总收入'}, axis='columns', inplace=True)
 
 df5 = pd.merge(df3, df4, on=['行业代码C', '统计截止日期'], how='left')
-df5['herf'] = (df5['营业总收入']/df5['行业营业总收入'].replace(0, np.nan))**2
+df5['herf'] = (df5['营业总收入'] / df5['行业营业总收入'].replace(0, np.nan)) ** 2
 df5.rename({"herf": "Factor_33"}, axis='columns', inplace=True)
 
 df6 = df5[['证券代码', '统计截止日期', 'Factor_33']]

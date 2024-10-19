@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+# @Time    : 2024/10/11 18:22
+# @Author  : YiMing Jiang
+
 from itertools import product
 import pandas as pd
 import os
@@ -11,7 +15,7 @@ def complete_code(code):
     """
     code = str(code)
     if len(code) < 6:
-        code = "0" * (6-len(code)) + code + ".sz"
+        code = "0" * (6 - len(code)) + code + ".sz"
     elif code[:2] == "60":
         code += ".sh"
     return code
@@ -25,7 +29,7 @@ def time_format(time):
     """
     time = pd.to_datetime(time)
     year, month, day = str(time.year), str(time.month), str(time.day)
-    return year + "0" * (2-len(month)) + str(time.month) + "0" * (2-len(day)) + str(time.day)
+    return year + "0" * (2 - len(month)) + str(time.month) + "0" * (2 - len(day)) + str(time.day)
 
 
 def refine(fileNames: list):
@@ -45,7 +49,7 @@ def refine(fileNames: list):
         # 调整时间格式
         df["统计截止日期"] = df["统计截止日期"].apply(lambda x: time_format(x))
         df.columns = ["Code", "Date", fileName]
-        df.to_csv("./refined_format_factor/" + fileName + ".csv", index=False, encoding='utf-8-sig')
+        df.to_csv("./refined_format_factor/" + fileName + ".csv", index=False, encoding="utf-8-sig")
 
 
 def extend(fileNames: list):
@@ -89,7 +93,7 @@ def extend(fileNames: list):
         df_template.insert(loc=0, column="Date", value=df_template.index)
         # 去除非交易日的季末
         df_template = df_template[df_template["Date"].isin(tradeDate["trade_date"].astype(str).values)]
-        df_template.to_csv("./extended_factor/" + fileName + ".csv", index=False, encoding='utf-8-sig')
+        df_template.to_csv("./extended_factor/" + fileName + ".csv", index=False, encoding="utf-8-sig")
 
 
 def merge_table(fileNames: list):
@@ -100,11 +104,11 @@ def merge_table(fileNames: list):
         df_tmp = pd.read_csv(r"./extended_factor//" + fileName + ".csv", encoding="utf-8-sig")
         df_tmp = pd.DataFrame(df_tmp.set_index("Date").unstack(), columns=[fileName])
         df = pd.merge(df, df_tmp, left_index=True, right_index=True)
-    df.to_csv(r"./extended_factor//Factor.csv", index=True, encoding='utf-8-sig')
+    df.to_csv(r"./extended_factor//Factor.csv", index=True, encoding="utf-8-sig")
 
 
 def main():
-    li = os.listdir(r'F:\Fintech_Project1\factor')
+    li = os.listdir(r"F:\Fintech_Project1\factor")
     fileNames = [ele.split(".")[0] for ele in li]
     fileNames.sort(key=lambda x: int(x.split("_")[1]))
     print("refine")

@@ -12,7 +12,7 @@ dt_df_merged = dt_df_all.copy()
 dt_df_all = dt_df_all.pivot(index="Date", columns="Code")  # do the pivot
 factor_list = [
     "Open", "Close", "High", "Low", "Volume", "Amount", "Amplitude", "RF_Rate", "RF_Amt", "Turnover",
-    "Vwap", "Return_10D", "Return_20D", "WGT_Return_10D", "WGT_Return_20D", "Turnover_10D", "Turnover_20D",
+    "Vwap", "Return_10D", "Return_20D", "Wgt_Return_10D", "Wgt_Return_20D", "Turnover_10D", "Turnover_20D",
     "Std_Turnover_10D", "Std_Turnover_20D", "Std_R_10D", "Std_R_20D", "High_R_Std_20D", "Low_R_Std_20D",
     "Hpl_R_Std_20D", "Hml_R_Std_20D", "Alpha101"
 ]
@@ -39,13 +39,13 @@ dt_df_merged = pd.merge(dt_df_merged, return_20d_df, how="inner", on=["Code", "D
 return_1d = (dt_df_all["Close"] - dt_df_all["Close"].shift(1)) / dt_df_all["Close"].shift(1)
 wgt_return_10d = (return_1d * dt_df_all["Turnover"]).rolling(10).sum() / dt_df_all["Turnover"].rolling(10).sum()
 wgt_return_10d_df = pd.DataFrame(wgt_return_10d.unstack())
-wgt_return_10d_df = wgt_return_10d_df.rename(columns={0: "WGT_Return_10D"})  # rename column
+wgt_return_10d_df = wgt_return_10d_df.rename(columns={0: "Wgt_Return_10D"})  # rename column
 dt_df_merged = pd.merge(dt_df_merged, wgt_return_10d_df, how="inner", on=["Code", "Date"])
 # - WGT Return 20 Days
 return_1d = (dt_df_all["Close"] - dt_df_all["Close"].shift(1)) / dt_df_all["Close"].shift(1)
 wgt_return_20d = (return_1d * dt_df_all["Turnover"]).rolling(20).sum() / dt_df_all["Turnover"].rolling(20).sum()
 wgt_return_20d_df = pd.DataFrame(wgt_return_20d.unstack())
-wgt_return_20d_df = wgt_return_20d_df.rename(columns={0: "WGT_Return_20D"})  # rename column
+wgt_return_20d_df = wgt_return_20d_df.rename(columns={0: "Wgt_Return_20D"})  # rename column
 dt_df_merged = pd.merge(dt_df_merged, wgt_return_20d_df, how="inner", on=["Code", "Date"])
 print("finish Momentum Factors.")
 

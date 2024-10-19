@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+# @Time    : 2024/10/11 18:22
+# @Author  : YiMing Jiang
+
 import pandas as pd
 
 df = pd.read_csv("./data/月个股回报率.csv", encoding="utf-8-sig")
