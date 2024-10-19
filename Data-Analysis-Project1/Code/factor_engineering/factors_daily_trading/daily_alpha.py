@@ -103,7 +103,7 @@ hpl_r_std_20d_df = hpl_r_std_20d_df.rename(columns={0: "Hpl_R_Std_20D"})
 dt_df_merged = pd.merge(dt_df_merged, hpl_r_std_20d_df, how="inner", on=["Code", "Date"])
 print("finish Volatility Factors.")
 
-# Alpha 101
+# Alpha 101 Ref https://zhuanlan.zhihu.com/p/28440433
 alpha101 = (dt_df_all["Close"] - dt_df_all["Open"]) / (dt_df_all["High"] - dt_df_all["Low"] + 0.001)
 alpha101_df = pd.DataFrame(alpha101.unstack())
 alpha101_df = alpha101_df.rename(columns={0: "Alpha101"})

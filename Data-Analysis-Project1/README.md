@@ -2,6 +2,11 @@
 
 ```python
 Data-Analysis-Project1/
+├── Code
+    ├── collect_data # The code of collecting opensource data.
+    ├── factor_engineering # The factors building codes.
+        ├── factors_daily_trading # The factors of daily trading data.
+        ├── factors_fundamental # The factors of fundamental info.
 ├── Data analysis project 1.pdf # The instruction of DAP1 from professor.
 └── ...
 ```
