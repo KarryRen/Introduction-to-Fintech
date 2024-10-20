@@ -22,7 +22,10 @@ factors_df = factors_df[factors_df.isnull().sum(axis=1) <= factors_num_thresh]
 
 # ---- Do the feature normalization (z-score) and Adjust the Label value ---- #
 factors_list = [
-    "Open", "Close", "High", "Low"
+    "Open", "Close", "High", "Low", "Volume", "Amount", "Amplitude", "RF_Rate", "RF_Amt", "Turnover",
+    "Vwap", "Return_10D", "Return_20D", "Wgt_Return_10D", "Wgt_Return_20D", "Turnover_10D", "Turnover_20D",
+    "Std_Turnover_10D", "Std_Turnover_20D", "Std_R_10D", "Std_R_20D", "High_R_Std_20D", "Low_R_Std_20D",
+    "Hpl_R_Std_20D", "Hml_R_Std_20D", "Alpha101"
 ]  # the feature list
 factors_df_normed = factors_df[["Date", "Code", "Label"]]  # the empty normed factors
 factors_df_f = factors_df[["Date", "Code"] + factors_list]  # the raw factors
@@ -34,6 +37,7 @@ for factor in factors_list:
     normed_factor = factors_df_f[factor].sub(factor_cross_mean, axis=0).div(factor_cross_std + 1e-5, axis=0).fillna(0)  # z-score & fill nan
     normed_factor_df = pd.DataFrame(normed_factor.unstack()).rename(columns={0: factor})  # get the dataframe
     factors_df_normed = pd.merge(factors_df_normed, normed_factor_df, how="inner", on=["Code", "Date"])  # merged
+    print(f"Finish factor normalization: {factor}.")
 # return times 100 and get %
 factors_df_normed["Label"] = factors_df_normed["Label"] * 100
 
@@ -44,7 +48,7 @@ assert not factors_df_normed.isnull().values.any(), "There are NaNs in factors_d
 # - the lag 1 data (easy to build)
 lag_1_factor_array = np.zeros(shape=(len(factors_df_normed), 1, 1 + len(factors_list)), dtype=np.float32)
 lag_1_factor_array[:, 0, :] = np.array(factors_df_normed[["Label"] + factors_list], dtype=np.float32)  # the lag 1
-lag_1_feature, lag_1_label = lag_1_factor_array[:, :, 1:], lag_1_factor_array[:, -1, 0]  # split the feature and label
+lag_1_feature, lag_1_label = lag_1_factor_array[:, :, 1:], lag_1_factor_array[:, -1, 0:1]  # split the feature and label
 assert lag_1_feature.dtype == np.float32 and lag_1_label.dtype == np.float32, "dtype ERROR !!"  # check dtype
 np.savez(f"{data_root_path}/lag_1_factor_data.npz", feature=lag_1_feature, label=lag_1_label)  # save to the `.npz` file
 # - the lag n data (you should be careful about the following codes)
@@ -63,10 +67,10 @@ for s, stock_code in enumerate(stock_code_list):  # because different have diffe
     for i in range(0, len(stock_factor_array) - 2):
         lag_3_factor_array[l3_steps, :] = stock_factor_array[i:i + 3]
         l3_steps += 1
-    print(f"finish {s}: stock_code {stock_code}.")
-lag_2_feature, lag_2_label = lag_2_factor_array[:, :, 1:], lag_2_factor_array[:, -1, 0]  # split the feature and label
+    print(f"Finish stock stacking {s}: stock_code {stock_code}.")
+lag_2_feature, lag_2_label = lag_2_factor_array[:, :, 1:], lag_2_factor_array[:, -1, 0:1]  # split the feature and label
 assert lag_2_feature.dtype == np.float32 and lag_2_label.dtype == np.float32, "dtype ERROR !!"  # check dtype
 np.savez(f"{data_root_path}/lag_2_factor_data.npz", feature=lag_2_feature, label=lag_2_label)  # save to the `.npz` file
-lag_3_feature, lag_3_label = lag_3_factor_array[:, :, 1:], lag_3_factor_array[:, -1, 0]  # split the feature and label
+lag_3_feature, lag_3_label = lag_3_factor_array[:, :, 1:], lag_3_factor_array[:, -1, 0:1]  # split the feature and label
 assert lag_3_feature.dtype == np.float32 and lag_3_label.dtype == np.float32, "dtype ERROR !!"  # check dtype
 np.savez(f"{data_root_path}/lag_3_factor_data.npz", feature=lag_3_feature, label=lag_3_label)  # save to the `.npz` file
