@@ -47,9 +47,8 @@ class FactoDataset(data.Dataset):
 
         """
 
-        # ---- Construct item data ---- #
+        # ---- Construct item data and return ---- #
         item_data = {"feature": self.feature_array[idx], "label": self.label_array[idx]}
-
         return item_data
 
 
@@ -58,6 +57,6 @@ if __name__ == "__main__":  # a demo using FactorDataset
     data_set = FactoDataset(FACTOR_DATASET_PATH, time_steps=1)
     for i in range(0, len(data_set) - 1):
         item_data = data_set[i]
-        print(item_data["feature"].shape)
-        print(item_data["label"].shape)
+        print(item_data["feature"])
+        print(item_data["label"])
         break
