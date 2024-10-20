@@ -39,7 +39,6 @@ class FactoDataset(data.Dataset):
         self.sign_label_array[self.sign_label_array == 0] = 1
         self.sign_label_array[self.sign_label_array == -1] = 0
 
-
     def __len__(self):
         """ Get the length of dataset. """
 
