@@ -148,7 +148,7 @@ if __name__ == "__main__":
     # fix the random seed
     fix_random_seed(seed=config.RANDOM_SEED)
     # build up the save directory
-    if not os.path.exists(config.SAVE_PATH):
+    if not os.path.exists(f"{config.SAVE_PATH}"):
         os.makedirs(config.SAVE_PATH)
     if not os.path.exists(config.MODEL_SAVE_PATH):
         os.makedirs(config.MODEL_SAVE_PATH)
