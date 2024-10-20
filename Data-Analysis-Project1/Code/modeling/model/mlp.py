@@ -10,7 +10,7 @@ from torch import nn
 
 
 class MLP_Net(nn.Module):
-    def __init__(self, input_size: int, hidden_size: int = 64, device: torch.device = torch.device("cpu")):
+    def __init__(self, input_size: int, hidden_size: int = 64, out_size: int = 3, device: torch.device = torch.device("cpu")):
         """ The init function of MLP Net.
 
         :param input_size: input size for each time step
@@ -32,7 +32,7 @@ class MLP_Net(nn.Module):
             nn.Linear(in_features=hidden_size * 2, out_features=hidden_size, bias=False),
             nn.ReLU()
         ).to(device=device)
-        self.fc = nn.Linear(in_features=hidden_size, out_features=1, bias=False).to(device=device)
+        self.fc = nn.Linear(in_features=hidden_size, out_features=out_size).to(device=device)
 
     def forward(self, feature_input: torch.Tensor) -> torch.Tensor:
         """ The forward function of MLP Net.
@@ -48,7 +48,7 @@ class MLP_Net(nn.Module):
         x = feature_input.reshape(bs, -1)  # shape=(bs, time_steps * input_size)
 
         # ---- Forward computing ---- #
-        x = self.linear(x)  # shape=(bs, hidden_size)
+        x = self.mlp(x)  # shape=(bs, hidden_size)
         output = self.fc(x)  # shape=(bs, 1)
 
         # ---- Return the result ---- #

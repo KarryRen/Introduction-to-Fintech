@@ -3,7 +3,7 @@
 # @Author  : Karry Ren
 
 
-""" Training and Prediction code. """
+""" Training and Prediction code. (regression) """
 
 import os
 import logging
@@ -47,7 +47,7 @@ def train_valid_model() -> None:
     logging.info(f"Valid dataset: length = {len(valid_dataset)}")
 
     # ---- Construct the model and transfer device, while making loss and optimizer ---- #
-    model = MLP_Net(input_size=config.FACTOR_NUM)
+    model = MLP_Net(input_size=config.FACTOR_NUM, device=device)
     # the loss function
     criterion = MSE_Loss(reduction=config.LOSS_REDUCTION)
     # the optimizer
@@ -139,10 +139,10 @@ def train_valid_model() -> None:
     plt.plot(epoch_metric["valid_CORR"], label="valid CORR", color="b")
     plt.legend()
     plt.subplot(3, 2, 5)
-    plt.plot(epoch_metric["valid_ACC"], label="valid RMSE", color="b")
+    plt.plot(epoch_metric["valid_ACC"], label="valid ACC", color="b")
     plt.legend()
     plt.subplot(3, 2, 6)
-    plt.plot(epoch_metric["train_F1"], label="train MAE", color="g")
+    plt.plot(epoch_metric["valid_F1"], label="Valid F1", color="b")
     plt.legend()
     plt.savefig(f"{config.SAVE_PATH}training_steps.png", dpi=200, bbox_inches="tight")
     logging.info("***************** TRAINING OVER ! *****************")

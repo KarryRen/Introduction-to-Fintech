@@ -101,7 +101,7 @@ def accuracy_score(y_true: np.ndarray, y_pred: np.ndarray):
     y_pred_dis = np.sign(y_pred)
 
     # ---- Compute the acc ---- #
-    return metrics.accuracy_score(y_true_dis, y_pred_dis)
+    return metrics.accuracy_score(y_true=y_true_dis, y_pred=y_pred_dis)
 
 
 def f1_score(y_true: np.ndarray, y_pred: np.ndarray):
@@ -122,7 +122,7 @@ def f1_score(y_true: np.ndarray, y_pred: np.ndarray):
     y_pred_dis = np.sign(y_pred)
 
     # ---- Compute the F1 ---- #
-    return metrics.f1_score(y_true_dis, y_pred_dis, average="micro")
+    return metrics.f1_score(y_true=y_true_dis, y_pred=y_pred_dis, average="micro")
 
 
 if __name__ == "__main__":
