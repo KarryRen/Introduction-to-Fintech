@@ -29,12 +29,12 @@ class FactoDataset(data.Dataset):
         factor_data_array = np.load(f"{root_path}/lag_{time_steps}_factor_data.npz")
 
         # ---- Get the feature and label (make sure of the dtype) ---- #
-        self.feature_array = factor_data_array["feature"].astype(np.float32)[0:10000]
-        self.label_array = factor_data_array["label"].astype(np.float32)[0:10000]
+        self.feature_array = factor_data_array["feature"].astype(np.float32)
+        self.label_array = factor_data_array["label"].astype(np.float32)
         assert self.feature_array.shape[0] == self.label_array.shape[0], "Data ERROR !"
 
         # ---- Build up the sign label ---- #
-        self.sign_label_array = np.sign(factor_data_array["label"]).astype(np.int64)[0:10000]
+        self.sign_label_array = np.sign(factor_data_array["label"]).astype(np.int64)
         self.sign_label_array[self.sign_label_array == 1] = 2
         self.sign_label_array[self.sign_label_array == 0] = 1
         self.sign_label_array[self.sign_label_array == -1] = 0

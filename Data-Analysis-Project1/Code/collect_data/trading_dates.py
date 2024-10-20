@@ -8,7 +8,7 @@ import akshare as ak
 import datetime
 
 # ---- Step 1. Define the start and end date ---- #
-START_DATE = datetime.date(2010, 1, 1)
+START_DATE = datetime.date(2019, 1, 1)
 END_DATE = datetime.date(2024, 6, 1)
 
 # ---- Step 1. Get all date dataframe ---- #

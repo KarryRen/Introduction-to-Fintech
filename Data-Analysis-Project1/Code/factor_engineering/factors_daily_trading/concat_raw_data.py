@@ -15,7 +15,6 @@ concat_df = pd.DataFrame()
 df_list = []
 for i, data_file in enumerate(daily_freq_trading_data_file_list):
     daily_freq_trading_df = pd.read_csv(f"../../../../Data/daily_trading_factors/raw_data/{data_file}")
-    assert str(daily_freq_trading_df["Date"].iloc[0]) == "20100104" and str(daily_freq_trading_df["Date"].iloc[-1]) == "20240531"
     df_list.append(daily_freq_trading_df)
 
 # ---- Concat the df ---- #
