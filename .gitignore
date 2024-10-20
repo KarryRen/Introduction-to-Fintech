@@ -1,11 +1,7 @@
 # Mac file
 .DS_Store
 .idea/
-daily_trading_factors/
-fundamental_factors/
-high_freq_factors/
-macro_factors/
-raw_factors_data.pkl
+Data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
