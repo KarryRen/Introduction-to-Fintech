@@ -1,7 +1,7 @@
 # Mac file
 .DS_Store
 .idea/
-Data/
+Data/daily_trading_factors/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
