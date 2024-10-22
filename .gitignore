@@ -2,6 +2,8 @@
 .DS_Store
 .idea/
 Data/daily_trading_factors/
+*.pkl
+*.npz
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
