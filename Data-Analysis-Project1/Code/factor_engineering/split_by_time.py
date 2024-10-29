@@ -95,3 +95,5 @@ for stock in stock_list:
         os.makedirs(f"{data_processed_split_path}/lag_3/{split_type}", exist_ok=True)
         np.savez(f"{data_processed_split_path}/lag_3/{split_type}/{stock}.npz", feature=slag_3_feature, label=slag_3_label)
         print(f"`{stock}`, {split_type}: lag_3 feature and label is saved successfully.")
+    # save to csv
+    stock_factors_df_normed_test.to_csv(f"{data_root_path}/processed_factors/test_csv/{stock}.csv", index=False)
