@@ -1,0 +1,61 @@
+RangeIndex: 129080 entries, 0 to 129079
+Data columns (total 53 columns):
+ #   Column                 Non-Null Count   Dtype  
+---  ------                 --------------   -----  
+ 0   title                  129080 non-null  object 
+ 1   stockName              129080 non-null  object 
+ 2   stockCode              129080 non-null  int64  
+ 3   orgCode                129080 non-null  int64  
+ 4   orgName                129080 non-null  object 
+ 5   orgSName               129080 non-null  object 
+ 6   publishDate            129080 non-null  object 
+ 7   infoCode               129080 non-null  object 
+ 8   column                 129080 non-null  int64  
+ 9   predictNextTwoYearEps  9768 non-null    float64
+ 10  predictNextTwoYearPe   9759 non-null    float64
+ 11  predictNextYearEps     37011 non-null   float64
+ 12  predictNextYearPe      36906 non-null   float64
+ 13  predictThisYearEps     66076 non-null   float64
+ 14  predictThisYearPe      65694 non-null   float64
+ 15  predictLastYearEps     18651 non-null   float64
+ 16  predictLastYearPe      17375 non-null   float64
+ 17  actualLastTwoYearEps   1430 non-null    float64
+ 18  actualLastYearEps      1430 non-null    float64
+ 19  industryCode           0 non-null       float64
+ 20  industryName           0 non-null       float64
+ 21  emIndustryCode         0 non-null       float64
+ 22  indvInduCode           129060 non-null  float64
+ 23  indvInduName           129060 non-null  object 
+ 24  emRatingCode           124204 non-null  float64
+ 25  emRatingValue          124204 non-null  float64
+ 26  emRatingName           124204 non-null  object 
+ 27  lastEmRatingCode       100183 non-null  float64
+ 28  lastEmRatingValue      100183 non-null  float64
+ 29  lastEmRatingName       100183 non-null  object 
+ 30  ratingChange           122614 non-null  float64
+ 31  reportType             129080 non-null  int64  
+ 32  author                 128781 non-null  object 
+ 33  indvIsNew              126039 non-null  float64
+ 34  researcher             128782 non-null  object 
+ 35  newListingDate         126834 non-null  object 
+ 36  newPurchaseDate        126834 non-null  object 
+ 37  newIssuePrice          126834 non-null  float64
+ 38  newPeIssueA            118588 non-null  float64
+ 39  indvAimPriceT          21877 non-null   float64
+ 40  indvAimPriceL          21877 non-null   float64
+ 41  attachType             129080 non-null  int64  
+ 42  attachSize             129080 non-null  int64  
+ 43  attachPages            129080 non-null  int64  
+ 44  encodeUrl              129080 non-null  object 
+ 45  sRatingName            124852 non-null  object 
+ 46  sRatingCode            124858 non-null  float64
+ 47  market                 129080 non-null  object 
+ 48  authorID               128781 non-null  object 
+ 49  count                  129080 non-null  int64  
+ 50  orgType                129080 non-null  object 
+ 51  url                    129080 non-null  object 
+ 52  content                97752 non-null   object 
+dtypes: float64(25), int64(8), object(20)
+memory usage: 52.2+ MB
+
+Process finished with exit code 0

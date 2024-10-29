@@ -87,7 +87,7 @@ class FactoDataset(data.Dataset):
 
 
 if __name__ == "__main__":  # a demo using FactorDataset
-    FACTOR_DATASET_PATH = "../../../Data/processed_factors"
+    FACTOR_DATASET_PATH = "../Data/processed_factors"
     data_set = FactoDataset(FACTOR_DATASET_PATH, time_steps=1, stock_file_list=["000009.sz.npz"], data_type="test")
     print(len(data_set))
     # for i in range(0, len(data_set) - 1):

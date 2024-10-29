@@ -6,6 +6,7 @@ import pandas as pd
 
 data_root_path = "../../../Data"
 
+
 def get_features_cols(factors_df):
     # ---- Select the feature columns ---- #
     all_column_list = list(factors_df.columns)  # get the columns
@@ -17,17 +18,18 @@ def get_features_cols(factors_df):
     return factors_list
 
 
-def dropna_row(factors_df,factors_num,threshold_pct = 0.1):
+def dropna_row(factors_df, factors_num, threshold_pct=0.1):
     # ---- Select the data using nan ---- #
     # use the label to select drop where Label is Nan
     factors_df = factors_df.dropna(axis=0, subset=["Label"])  # length = 605151
     # use the feature to select, the total number of nan in one line should <= thresh
     factors_num_thresh = 3 + threshold_pct * factors_num  # the threshold of factors number
     factors_df = factors_df[factors_df.isnull().sum(axis=1) <= factors_num_thresh]  # length = 449765
-    print("remained data length:",len(factors_df))
+    print("remained data length:", len(factors_df))
     return factors_df
 
-def do_normalization(factors_df,factors_list):
+
+def do_normalization(factors_df, factors_list):
     # ---- Do the feature normalization (z-score) and Adjust the Label value ---- #
     factors_df_normed = factors_df[["Date", "Code", "Label"]]  # the empty normed factors
     factors_df_f = factors_df[["Date", "Code"] + factors_list]  # the raw factors
@@ -47,7 +49,8 @@ def do_normalization(factors_df,factors_list):
     assert not factors_df_normed.isnull().values.any(), "There are NaNs in factors_df_normed !!!"
     return factors_df_normed
 
-def save_npz_data(factors_df_normed,factors_list):
+
+def save_npz_data(factors_df_normed, factors_list):
     # ---- Save it to npz ---- #
     stock_list = sorted(factors_df_normed["Code"].unique())
     assert len(stock_list) >= 360, "stock code num is not enough !"
@@ -84,8 +87,7 @@ def save_npz_data(factors_df_normed,factors_list):
         print(f"`{stock}`: lag_3 feature and label is saved successfully.")
 
 
-
-def gen_lag_data(df,lags,dropnan=True):
+def gen_lag_data(df, lags, dropnan=True):
     """
     generate columns of lagged data to the df 
     """
@@ -94,17 +96,17 @@ def gen_lag_data(df,lags,dropnan=True):
     cols, names = [], []
     # add lag 0 data
     cols.append(df)
-    names +=[f"{i}" for i in raw_columns]
+    names += [f"{i}" for i in raw_columns]
     # generate data of lag (t-n, ... t-1)
-    for i in range(1,lags+1):
+    for i in range(1, lags + 1):
         cols.append(df.shift(i))
-        names += [('%s(t-%d)' % (raw_columns[j%n_vars], i)) for j in range(n_vars)]
+        names += [('%s(t-%d)' % (raw_columns[j % n_vars], i)) for j in range(n_vars)]
     # merge all lagged data
     agg = pd.concat(cols, axis=1)
     agg.columns = names
     # drop columns of lagged label
-    for i in range(1,lags+1):
-        agg.drop(columns=['Label(t-%d)'%i],inplace=True)
+    for i in range(1, lags + 1):
+        agg.drop(columns=['Label(t-%d)' % i], inplace=True)
     # eliminate nan row
     if dropnan:
         agg.dropna(inplace=True)
@@ -121,13 +123,13 @@ factors_df = factors_df[util_columns + factors_list]
 factors_num = len(factors_list)
 
 # Select the data using nan
-factors_df  = dropna_row(factors_df,factors_num,threshold_pct = 0.1)
+factors_df = dropna_row(factors_df, factors_num, threshold_pct=0.1)
 
 # Do the feature normalization (z-score) and Adjust the Label value 
-factors_df_normed = do_normalization(factors_df,factors_list)
+factors_df_normed = do_normalization(factors_df, factors_list)
 
 # Save it to npz 
-# save_npz_data(factors_df_normed,factors_list)
+save_npz_data(factors_df_normed, factors_list)
 
 # generate lagged data for each stock
 # lag1_factors_df = factors_df_normed.groupby("Code").apply(lambda x:gen_lag_data(x.sort_values('Date').set_index(['Date']),lags=1,dropnan=True),include_groups=False)
