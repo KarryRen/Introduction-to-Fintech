@@ -6,36 +6,52 @@
 
 You should make your data directory like:
 root_path/
-    ├── lag_{time_steps}_factor_data.npz
+    ├── lag_1
+        ├── stock_1.npz
+        ├── stock_2.npz
+        ├── ...
+        └── stock_n.npz
+    ├── lag_2
+    ├── ...
+    └── lag_n
 
 """
 
 from torch.utils import data
 import numpy as np
+from typing import List
+import os
 
 
 class FactoDataset(data.Dataset):
     """ The torch.Dataset of factor dataset. """
 
-    def __init__(self, root_path: str, time_steps: int = 1):
+    def __init__(self, root_path: str, time_steps: int = 1, stock_file_list: List[str] = None):
         """ The init function of Factor Dataset.
 
-        :param root_path: the root path of UCI electricity dataset
+        :param root_path: the root path of dataset
         :param time_steps: the time steps (lag steps)
+        :param stock_file_list: the stock list, if None, use all stocks (format should be `stock_code.npz`)
 
         """
 
         # ---- Read the data ---- #
-        factor_data_array = np.load(f"{root_path}/lag_{time_steps}_factor_data.npz")
+        if stock_file_list is None:
+            stock_file_list = sorted(os.listdir(f"{root_path}/lag_{time_steps}"))
 
         # ---- Get the feature and label (make sure of the dtype) ---- #
-        self.feature_array = factor_data_array["feature"].astype(np.float32)[:1000]
-        self.label_array = factor_data_array["label"].astype(np.float32)[:1000]
+        # read
+        feature_array_list, label_array_list = [], []
+        for stock_file in stock_file_list:
+            feature_array_list.append(np.load(f"{root_path}/lag_{time_steps}/{stock_file}")["feature"])
+            label_array_list.append(np.load(f"{root_path}/lag_{time_steps}/{stock_file}")["label"])
+        # concat
+        self.feature_array = np.concatenate(feature_array_list, axis=0)
+        self.label_array = np.concatenate(label_array_list, axis=0)
         assert self.feature_array.shape[0] == self.label_array.shape[0], "Data ERROR !"
-        # self.feature_array[:, 0, 0] = self.label_array[:, 0]
 
         # ---- Build up the sign label ---- #
-        self.sign_label_array = np.sign(factor_data_array["label"]).astype(np.int64)[:1000]
+        self.sign_label_array = np.sign(self.label_array).astype(np.int64)
         self.sign_label_array[self.sign_label_array == 1] = 2
         self.sign_label_array[self.sign_label_array == 0] = 1
         self.sign_label_array[self.sign_label_array == -1] = 0
@@ -61,8 +77,8 @@ class FactoDataset(data.Dataset):
 
 
 if __name__ == "__main__":  # a demo using FactorDataset
-    FACTOR_DATASET_PATH = "../../../Data"
-    data_set = FactoDataset(FACTOR_DATASET_PATH, time_steps=1)
+    FACTOR_DATASET_PATH = "../../../Data/processed_factors"
+    data_set = FactoDataset(FACTOR_DATASET_PATH, time_steps=1, stock_file_list=["000009.sz.npz", "000021.sz.npz"])
     print(len(data_set))
     for i in range(0, len(data_set) - 1):
         item_data = data_set[i]

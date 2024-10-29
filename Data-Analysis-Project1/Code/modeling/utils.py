@@ -33,11 +33,10 @@ def fix_random_seed(seed: int) -> None:
     torch.backends.cudnn.deterministic = True
 
 
-def load_best_model(model_save_path: str, model_name: str, metric: str) -> tuple:
+def load_best_model(model_save_path: str, metric: str) -> tuple:
     """ Using the metric to select the best model after training and validation.
 
     :param model_save_path: the path of saving models
-    :param model_name: the name of model
     :param metric: the dependent metric to select best model
 
     return:
@@ -47,12 +46,12 @@ def load_best_model(model_save_path: str, model_name: str, metric: str) -> tuple
     """
 
     # ---- Step 1. Read the metric df and test the `metric` ---- #
-    metric_df = pd.read_csv(model_save_path + "model_metric.csv", index_col=0)
+    metric_df = pd.read_csv(f"{model_save_path}/model_metric.csv", index_col=0)
     assert metric in metric_df.columns, f"The metric you want use to select best model `{metric}` is not allowed !"
 
     # ---- Step 2. Get the path of best epoch model ---- #
     best_epoch = metric_df.index[np.argmax(metric_df[metric].values)]
-    model_path = model_save_path + f"{model_name}_model_pytorch_epoch_{best_epoch}"
+    model_path = f"{model_save_path}/model_pytorch_epoch_{best_epoch}"
 
     # ---- Step 3. Load the best model ---- #
     model = torch.load(model_path)
