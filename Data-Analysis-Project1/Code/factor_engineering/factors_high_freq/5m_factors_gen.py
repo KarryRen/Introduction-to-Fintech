@@ -3,9 +3,6 @@ Author: zhangwj
 Date: 2024-10-29 19:25:27
 LastEditTime: 2024-10-29 19:33:35
 LastEditors: zhangwj
-Description: 
-FilePath: \Introduction-to-Fintech-DAPs\Data-Analysis-Project1\Code\factor_engineering\factors_high_freq\5m_factors_gen.py
-
 '''
 import pandas as pd
 DATA_DIR = r".\data"

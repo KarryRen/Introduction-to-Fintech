@@ -127,10 +127,10 @@ factors_df  = dropna_row(factors_df,factors_num,threshold_pct = 0.1)
 factors_df_normed = do_normalization(factors_df,factors_list)
 
 # Save it to npz 
-save_npz_data(factors_df_normed,factors_list)
+# save_npz_data(factors_df_normed,factors_list)
 
 # generate lagged data for each stock
 # lag1_factors_df = factors_df_normed.groupby("Code").apply(lambda x:gen_lag_data(x.sort_values('Date').set_index(['Date']),lags=1,dropnan=True),include_groups=False)
 # lag2_factors_df = factors_df_normed.groupby("Code").apply(lambda x:gen_lag_data(x.sort_values('Date').set_index(['Date']),lags=2,dropnan=True),include_groups=False)
-# lag3_factors_df = factors_df_normed.groupby("Code").apply(lambda x:gen_lag_data(x.sort_values('Date').set_index(['Date']),lags=3,dropnan=True),include_groups=False)
-# lag3_factors_df.to_pickle("lag3_factors_df.pkl")
+lag3_factors_df = factors_df_normed.groupby("Code").apply(lambda x:gen_lag_data(x.sort_values('Date').set_index(['Date']),lags=3,dropnan=True),include_groups=False)
+lag3_factors_df.to_pickle("lag3_factors_df.pkl")
