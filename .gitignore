@@ -4,6 +4,7 @@
 Data/daily_trading_factors/
 *.pkl
 *.npz
+exp_*/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
