@@ -273,11 +273,11 @@ if __name__ == "__main__":
     # construct the train&valid log file
     logging.basicConfig(filename=LOG_FILE, format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
 
-    # # ---- Step 1. Train & Valid model ---- #
-    # os_train_valid_model(root_save_path=SAVE_PATH)
-    #
-    # # ---- Step 2. Pred model ---- #
-    # os_pred_model(root_save_path=SAVE_PATH)
+    # ---- Step 1. Train & Valid model ---- #
+    os_train_valid_model(root_save_path=SAVE_PATH)
+
+    # ---- Step 2. Pred model ---- #
+    os_pred_model(root_save_path=SAVE_PATH)
 
     # ---- Step 3. Pred for each book ---- #
-    pred_for_each_stock(root_save_path=SAVE_PATH)
+    # pred_for_each_stock(root_save_path=SAVE_PATH)
