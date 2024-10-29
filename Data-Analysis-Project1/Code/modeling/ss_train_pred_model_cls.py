@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-# @Time    : 2024/10/20 12:06
+# @Time    : 2024/10/28 20:35
 # @Author  : Karry Ren
 
-
-""" Training and Prediction code. (classification) """
+""" Training and Prediction code. (classification) for single stock one by one. """
 
 import os
 import logging
@@ -14,35 +13,35 @@ from tqdm import tqdm
 from datetime import datetime
 import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn import metrics
 
 from utils import fix_random_seed
-from Code.modeling import config as config
+import config as config
 from factor_dataset import FactoDataset
 from model.mlp import MLP_Net
 from model.loss import CE_Loss
-from sklearn import metrics
+from utils import load_best_model
 
 
-def train_valid_model() -> None:
-    """ Train & Valid Model. """
+def ss_train_valid_model(stock_file_name: str, root_save_path: str) -> None:
+    """ Train & Valid Model using single stock data. """
 
-    logging.info(f"***************** RUN TRAIN&VALID MODEL *****************")
+    # ---- Some preparation ---- #
+    logging.info(f"***************** Start operating stock: {stock_file_name}   *****************")
+    ss_save_path = f"{root_save_path}/{stock_file_name}"
+    os.makedirs(ss_save_path, exist_ok=True)
+    ss_model_save_path = f"{root_save_path}/{stock_file_name}/model"
+    os.makedirs(ss_model_save_path, exist_ok=True)
 
     # ---- Get the device ---- #
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    logging.info(f"***************** In device {device}   *****************")
+    logging.info(f"***************** In device {device}  *****************")
 
     # ---- Make the dataset and dataloader ---- #
-    logging.info(f"***************** BEGIN MAKE DATASET & DATALOADER ! *****************")
-    logging.info(f"||| time_steps = {config.TIME_STEPS}, batch size = {config.BATCH_SIZE} |||")
-    # make the dataset and dataloader of training
-    logging.info(f"**** TRAINING DATASET & DATALOADER ****")
-    train_dataset = FactoDataset(root_path=config.FACTOR_DATA_PATH, time_steps=config.TIME_STEPS)
+    train_dataset = FactoDataset(root_path=config.FACTOR_DATA_PATH, time_steps=config.TIME_STEPS, stock_file_list=[stock_file_name])
     train_loader = data.DataLoader(dataset=train_dataset, batch_size=config.BATCH_SIZE, shuffle=True)  # the train dataloader
-    logging.info(f"**** VALID DATASET & DATALOADER ****")
-    valid_dataset = FactoDataset(root_path=config.FACTOR_DATA_PATH, time_steps=config.TIME_STEPS)
+    valid_dataset = FactoDataset(root_path=config.FACTOR_DATA_PATH, time_steps=config.TIME_STEPS, stock_file_list=[stock_file_name])
     valid_loader = data.DataLoader(dataset=valid_dataset, batch_size=config.BATCH_SIZE, shuffle=False)  # the valid dataloader
-    logging.info("***************** DATASET MAKE OVER ! *****************")
     logging.info(f"Train dataset: length = {len(train_dataset)}")
     logging.info(f"Valid dataset: length = {len(valid_dataset)}")
 
@@ -59,8 +58,6 @@ def train_valid_model() -> None:
         "train_loss": np.zeros(config.EPOCHS), "valid_loss": np.zeros(config.EPOCHS),
         "valid_ACC": np.zeros(config.EPOCHS), "valid_F1": np.zeros(config.EPOCHS)
     }
-    # train model epoch by epoch
-    logging.info(f"***************** BEGIN TRAINING ! *****************")
     # start train and valid during train
     for epoch in tqdm(range(config.EPOCHS)):
         # start timer for one epoch
@@ -118,15 +115,15 @@ def train_valid_model() -> None:
         epoch_metric["valid_F1"][epoch] = metrics.f1_score(
             y_true=valid_labels_one_epoch.cpu().numpy(), y_pred=valid_preds_one_epoch.cpu().numpy(), average="micro"
         )
-
         # save model&model_config and metrics
-        torch.save(model, f"{config.MODEL_SAVE_PATH}/model_pytorch_epoch_{epoch}")
-        pd.DataFrame(epoch_metric).to_csv(f"{config.MODEL_SAVE_PATH}/model_metric.csv")
-
+        if epoch >= 0.95 * config.EPOCHS:
+            torch.save(model, f"{ss_model_save_path}/model_pytorch_epoch_{epoch}")
         # write metric log
         dt = datetime.now() - t_start
         logging.info(f"Epoch {epoch + 1}/{config.EPOCHS}, Duration: {dt}, "
                      f"{['%s:%.4f ' % (key, value[epoch]) for key, value in epoch_metric.items()]}")
+    # save the metric
+    pd.DataFrame(epoch_metric)[int(0.95 * config.EPOCHS + 1):].to_csv(f"{ss_model_save_path}/model_metric.csv")
     # draw figure of train and valid metrics
     plt.figure(figsize=(15, 6))
     plt.subplot(2, 1, 1)
@@ -139,21 +136,77 @@ def train_valid_model() -> None:
     plt.subplot(2, 2, 4)
     plt.plot(epoch_metric["valid_F1"], label="Valid F1", color="b")
     plt.legend()
-    plt.savefig(f"{config.SAVE_PATH}training_steps.png", dpi=200, bbox_inches="tight")
+    plt.savefig(f"{ss_save_path}/training_steps.png", dpi=200, bbox_inches="tight")
     logging.info("***************** TRAINING OVER ! *****************")
+
+
+def ss_pred_model(stock_file_name: str, root_save_path: str):
+    """ Test Model using single stock data. """
+
+    # ---- Some basic setting ---- #
+    ss_model_save_path = f"{root_save_path}/{stock_file_name}/model"
+
+    # ---- Get the device ---- #
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    logging.info(f"***************** In device {device}  *****************")
+
+    # ---- Make the dataset and dataloader ---- #
+    test_dataset = FactoDataset(root_path=config.FACTOR_DATA_PATH, time_steps=config.TIME_STEPS, stock_file_list=[stock_file_name])
+    test_loader = data.DataLoader(dataset=test_dataset, batch_size=config.BATCH_SIZE, shuffle=False)  # the valid dataloader
+    logging.info(f"Test dataset: length = {len(test_dataset)}")
+    preds_one_stock = torch.zeros(len(test_dataset)).to(device=device)
+    labels_one_stock = torch.zeros(len(test_dataset)).to(device=device)
+
+    # ---- Construct the model and transfer device, while making loss and optimizer ---- #
+    model, model_path = load_best_model(ss_model_save_path, "valid_F1")
+
+    # ---- Start Pred ---- #
+    last_step = 0
+    with torch.no_grad():
+        for batch_data in tqdm(test_loader):
+            # move data to device
+            features, labels = batch_data["feature"].to(device=device), batch_data["sign_label"].to(device=device)
+            # forward to compute outputs, different model have different loss
+            preds = model(features)
+            # doc the result in one iter
+            now_step = last_step + preds.shape[0]
+            preds_one_stock[last_step:now_step] = torch.argmax(torch.softmax(preds, dim=1), dim=1).detach()
+            labels_one_stock[last_step:now_step] = labels.detach()
+            last_step = now_step
+
+    # ---- Return ss result ---- #
+    return preds_one_stock.cpu().numpy(), labels_one_stock.cpu().numpy()
 
 
 if __name__ == "__main__":
     # ---- Prepare some environments for training and prediction ---- #
     # fix the random seed
     fix_random_seed(seed=config.RANDOM_SEED)
-    # build up the save directory
-    if not os.path.exists(f"{config.SAVE_PATH}"):
-        os.makedirs(config.SAVE_PATH)
-    if not os.path.exists(config.MODEL_SAVE_PATH):
-        os.makedirs(config.MODEL_SAVE_PATH)
+    # build up the PATH
+    SAVE_PATH = f"exp_ss_cls/rs_{config.RANDOM_SEED}"
+    LOG_FILE = f"{SAVE_PATH}/log_file.log"
+    # build up the save directory of the PATH
+    os.makedirs(SAVE_PATH, exist_ok=True)
     # construct the train&valid log file
-    logging.basicConfig(filename=config.LOG_FILE, format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
+    logging.basicConfig(filename=LOG_FILE, format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
+    stock_file_list = sorted(os.listdir(f"{config.FACTOR_DATA_PATH}/lag_{config.TIME_STEPS}"))
 
     # ---- Step 1. Train & Valid model ---- #
-    train_valid_model()
+    for stock_file in stock_file_list:
+        ss_train_valid_model(stock_file_name=stock_file, root_save_path=SAVE_PATH)
+
+    # ---- Step 2. Pred model ---- #
+    # do the pred
+    ss_pred_array_list, ss_label_array_list = [], []  # define empty list
+    for stock_file in stock_file_list:
+        ss_pred_array, ss_label_array = ss_pred_model(stock_file_name=stock_file, root_save_path=SAVE_PATH)
+        ss_pred_array_list.append(ss_pred_array)
+        ss_label_array_list.append(ss_label_array)
+    # do the concat
+    all_pred_array = np.concatenate(ss_pred_array_list, axis=0)
+    all_label_array = np.concatenate(ss_label_array_list, axis=0)
+    print(
+        f"{len(stock_file_list)} overall stocks, {all_pred_array.shape[0]} samples: "
+        f"ACC={metrics.accuracy_score(y_true=all_label_array, y_pred=all_pred_array)}, "
+        f"FA={metrics.f1_score(y_true=all_label_array, y_pred=all_pred_array, average='micro')}"
+    )

@@ -15,8 +15,8 @@ from datetime import datetime
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from utils import fix_random_seed, load_best_model
-import config as config
+from utils import fix_random_seed
+from Code.modeling import config as config
 from factor_dataset import FactoDataset
 from model.mlp import MLP_Net
 from model.loss import MSE_Loss
