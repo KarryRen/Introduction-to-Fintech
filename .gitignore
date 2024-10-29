@@ -1,9 +1,7 @@
 # Mac file
 .DS_Store
 .idea/
-Data/daily_trading_factors/
-*.pkl
-*.npz
+Data/
 exp_*/
 
 # Byte-compiled / optimized / DLL files
