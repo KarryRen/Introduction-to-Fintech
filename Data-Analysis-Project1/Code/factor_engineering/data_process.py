@@ -114,7 +114,7 @@ def gen_lag_data(df, lags, dropnan=True):
 
 
 # Read the data 
-factors_df = pd.read_pickle(f"{data_root_path}/all_factors.pkl")  # length = 606475
+factors_df = pd.read_pickle(f"{data_root_path}/all_factors1.pkl")  # length = 606475
 
 # Select the feature columns
 factors_list = get_features_cols(factors_df)
