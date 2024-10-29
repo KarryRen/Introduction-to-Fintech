@@ -1,7 +1,7 @@
 # Mac file
 .DS_Store
 .idea/
-Data/daily_trading_factors/
+Data/
 *.pkl
 *.npz
 *.parquet
