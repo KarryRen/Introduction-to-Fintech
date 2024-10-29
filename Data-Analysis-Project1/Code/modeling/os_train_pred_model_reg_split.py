@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# @Time    : 2024/10/28 20:35
+# @Time    : 2024/10/29 16:50
 # @Author  : Karry Ren
 
 """ Training and Prediction code. (regression) for overall stock. """
@@ -39,9 +39,9 @@ def os_train_valid_model(root_save_path: str) -> None:
     logging.info(f"***************** In device {device}  *****************")
 
     # ---- Make the dataset and dataloader ---- #
-    train_dataset = FactoDataset(root_path=config.FACTOR_DATA_PATH, time_steps=config.TIME_STEPS)
+    train_dataset = FactoDataset(root_path=config.FACTOR_DATA_PATH, time_steps=config.TIME_STEPS, data_type="train")
     train_loader = data.DataLoader(dataset=train_dataset, batch_size=config.BATCH_SIZE, shuffle=True)  # the train dataloader
-    valid_dataset = FactoDataset(root_path=config.FACTOR_DATA_PATH, time_steps=config.TIME_STEPS)
+    valid_dataset = FactoDataset(root_path=config.FACTOR_DATA_PATH, time_steps=config.TIME_STEPS, data_type="valid")
     valid_loader = data.DataLoader(dataset=valid_dataset, batch_size=config.BATCH_SIZE, shuffle=False)  # the valid dataloader
     logging.info(f"Train dataset: length = {len(train_dataset)}")
     logging.info(f"Valid dataset: length = {len(valid_dataset)}")
@@ -57,7 +57,9 @@ def os_train_valid_model(root_save_path: str) -> None:
     # init the metric dict of all epochs
     epoch_metric = {
         "train_loss": np.zeros(config.EPOCHS), "valid_loss": np.zeros(config.EPOCHS),
+        "train_R2": np.zeros(config.EPOCHS), "train_CORR": np.zeros(config.EPOCHS),
         "valid_R2": np.zeros(config.EPOCHS), "valid_CORR": np.zeros(config.EPOCHS),
+        "train_ACC": np.zeros(config.EPOCHS), "train_F1": np.zeros(config.EPOCHS),
         "valid_ACC": np.zeros(config.EPOCHS), "valid_F1": np.zeros(config.EPOCHS)
     }
     # start train and valid during train
@@ -92,6 +94,10 @@ def os_train_valid_model(root_save_path: str) -> None:
             last_step = now_step
         # note the loss and metrics for one epoch of TRAINING
         epoch_metric["train_loss"][epoch] = np.mean(train_loss_one_epoch)
+        epoch_metric["train_R2"][epoch] = r2_score(y_true=train_labels_one_epoch.cpu().numpy(), y_pred=train_preds_one_epoch.cpu().numpy())
+        epoch_metric["train_CORR"][epoch] = corr_score(y_true=train_labels_one_epoch.cpu().numpy(), y_pred=train_preds_one_epoch.cpu().numpy())
+        epoch_metric["train_ACC"][epoch] = accuracy_score(y_true=train_labels_one_epoch.cpu().numpy(), y_pred=train_preds_one_epoch.cpu().numpy())
+        epoch_metric["train_F1"][epoch] = f1_score(y_true=train_labels_one_epoch.cpu().numpy(), y_pred=train_preds_one_epoch.cpu().numpy())
         # - valid model
         last_step = 0
         model.eval()
@@ -116,7 +122,6 @@ def os_train_valid_model(root_save_path: str) -> None:
         epoch_metric["valid_ACC"][epoch] = accuracy_score(y_true=valid_labels_one_epoch.cpu().numpy(), y_pred=valid_preds_one_epoch.cpu().numpy())
         epoch_metric["valid_F1"][epoch] = f1_score(y_true=valid_labels_one_epoch.cpu().numpy(), y_pred=valid_preds_one_epoch.cpu().numpy())
         # save model&model_config and metrics
-        # if epoch >= 0.95 * config.EPOCHS:
         torch.save(model, f"{os_model_save_path}/model_pytorch_epoch_{epoch}")
         # write metric log
         dt = datetime.now() - t_start
@@ -132,16 +137,20 @@ def os_train_valid_model(root_save_path: str) -> None:
     plt.plot(epoch_metric["valid_loss"], label="valid loss", color="b")
     plt.legend()
     plt.subplot(3, 2, 3)
+    plt.plot(epoch_metric["train_R2"], label="train R2", color="g")
     plt.plot(epoch_metric["valid_R2"], label="valid R2", color="b")
     plt.legend()
     plt.subplot(3, 2, 4)
+    plt.plot(epoch_metric["train_CORR"], label="train CORR", color="g")
     plt.plot(epoch_metric["valid_CORR"], label="valid CORR", color="b")
     plt.legend()
     plt.subplot(3, 2, 5)
+    plt.plot(epoch_metric["train_ACC"], label="train ACC", color="g")
     plt.plot(epoch_metric["valid_ACC"], label="valid ACC", color="b")
     plt.legend()
     plt.subplot(3, 2, 6)
-    plt.plot(epoch_metric["valid_F1"], label="valid F1", color="b")
+    plt.plot(epoch_metric["train_F1"], label="train F1", color="g")
+    plt.plot(epoch_metric["valid_F1"], label="Valid F1", color="b")
     plt.legend()
     plt.savefig(f"{root_save_path}/training_steps.png", dpi=200, bbox_inches="tight")
     logging.info("***************** TRAINING OVER ! *****************")
@@ -200,7 +209,7 @@ if __name__ == "__main__":
     # fix the random seed
     fix_random_seed(seed=config.RANDOM_SEED)
     # build up the PATH
-    SAVE_PATH = f"exp_os_reg/rs_{config.RANDOM_SEED}"
+    SAVE_PATH = f"exp_os_reg_split/rs_{config.RANDOM_SEED}"
     LOG_FILE = f"{SAVE_PATH}/log_file.log"
     # build up the save directory of the PATH
     os.makedirs(SAVE_PATH, exist_ok=True)

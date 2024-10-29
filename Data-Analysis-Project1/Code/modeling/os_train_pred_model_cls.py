@@ -135,7 +135,7 @@ def os_train_valid_model(root_save_path: str) -> None:
     plt.plot(epoch_metric["valid_ACC"], label="valid ACC", color="b")
     plt.legend()
     plt.subplot(2, 2, 4)
-    plt.plot(epoch_metric["valid_F1"], label="Valid F1", color="b")
+    plt.plot(epoch_metric["valid_F1"], label="valid F1", color="b")
     plt.legend()
     plt.savefig(f"{root_save_path}/training_steps.png", dpi=200, bbox_inches="tight")
     logging.info("***************** TRAINING OVER ! *****************")

@@ -26,12 +26,16 @@ import os
 class FactoDataset(data.Dataset):
     """ The torch.Dataset of factor dataset. """
 
-    def __init__(self, root_path: str, time_steps: int = 1, stock_file_list: List[str] = None):
+    def __init__(self, root_path: str, time_steps: int = 1, stock_file_list: List[str] = None, data_type: str = None):
         """ The init function of Factor Dataset.
 
         :param root_path: the root path of dataset
         :param time_steps: the time steps (lag steps)
         :param stock_file_list: the stock list, if None, use all stocks (format should be `stock_code.npz`)
+        :param data_type: the data type, if None, use all data as train & valid & test else:
+            - `train`
+            - `valid`
+            - `test`
 
         """
 
@@ -39,12 +43,18 @@ class FactoDataset(data.Dataset):
         if stock_file_list is None:
             stock_file_list = sorted(os.listdir(f"{root_path}/lag_{time_steps}"))
 
+        # ---- Build up the type data ---- #
+        if data_type is None:
+            data_path = f"{root_path}/lag_{time_steps}"
+        else:
+            data_path = f"{root_path}/split/lag_{time_steps}/{data_type}"
+
         # ---- Get the feature and label (make sure of the dtype) ---- #
         # read
         feature_array_list, label_array_list = [], []
         for stock_file in stock_file_list:
-            feature_array_list.append(np.load(f"{root_path}/lag_{time_steps}/{stock_file}")["feature"])
-            label_array_list.append(np.load(f"{root_path}/lag_{time_steps}/{stock_file}")["label"])
+            feature_array_list.append(np.load(f"{data_path}/{stock_file}")["feature"])
+            label_array_list.append(np.load(f"{data_path}/{stock_file}")["label"])
         # concat
         self.feature_array = np.concatenate(feature_array_list, axis=0)
         self.label_array = np.concatenate(label_array_list, axis=0)
@@ -78,11 +88,11 @@ class FactoDataset(data.Dataset):
 
 if __name__ == "__main__":  # a demo using FactorDataset
     FACTOR_DATASET_PATH = "../../../Data/processed_factors"
-    data_set = FactoDataset(FACTOR_DATASET_PATH, time_steps=1, stock_file_list=["000009.sz.npz", "000021.sz.npz"])
+    data_set = FactoDataset(FACTOR_DATASET_PATH, time_steps=1, stock_file_list=["000009.sz.npz"], data_type="test")
     print(len(data_set))
-    for i in range(0, len(data_set) - 1):
-        item_data = data_set[i]
-        print(item_data["feature"])
-        print(item_data["label"])
-        print(item_data["sign_label"])
-        break
+    # for i in range(0, len(data_set) - 1):
+    #     item_data = data_set[i]
+    #     print(item_data["feature"])
+    #     print(item_data["label"])
+    #     print(item_data["sign_label"])
+    #     break

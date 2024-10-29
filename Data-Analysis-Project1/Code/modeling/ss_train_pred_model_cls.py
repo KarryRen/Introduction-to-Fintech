@@ -139,7 +139,7 @@ def ss_train_valid_model(stock_file_name: str, root_save_path: str) -> None:
     plt.plot(epoch_metric["valid_ACC"], label="valid ACC", color="b")
     plt.legend()
     plt.subplot(2, 2, 4)
-    plt.plot(epoch_metric["valid_F1"], label="Valid F1", color="b")
+    plt.plot(epoch_metric["valid_F1"], label="valid F1", color="b")
     plt.legend()
     plt.savefig(f"{ss_save_path}/training_steps.png", dpi=200, bbox_inches="tight")
     logging.info("***************** TRAINING OVER ! *****************")
@@ -221,5 +221,5 @@ if __name__ == "__main__":
     print(
         f"{len(stock_file_list)} overall stocks, {all_pred_array.shape[0]} samples: "
         f"ACC={metrics.accuracy_score(y_true=all_label_array, y_pred=all_pred_array)}, "
-        f"FA={metrics.f1_score(y_true=all_label_array, y_pred=all_pred_array, average='micro')}"
+        f"F1={metrics.f1_score(y_true=all_label_array, y_pred=all_pred_array, average='micro')}"
     )
