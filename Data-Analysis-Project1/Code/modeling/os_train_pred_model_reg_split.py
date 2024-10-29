@@ -179,6 +179,7 @@ def os_pred_model(root_save_path: str) -> None:
 
     # ---- Construct the model and transfer device, while making loss and optimizer ---- #
     model, model_path = load_best_model(os_model_save_path, "valid_F1")
+    logging.info(f"Load best mode {model_path}")
 
     # ---- Start Pred ---- #
     last_step = 0
@@ -204,6 +205,62 @@ def os_pred_model(root_save_path: str) -> None:
     )
 
 
+def pred_for_each_stock(root_save_path: str) -> None:
+    """ Pred for each stock.
+
+    :param root_save_path: path to save the model
+
+    """
+
+    # ---- Some basic setting ---- #
+    os_model_save_path = f"{root_save_path}/model"
+
+    # ---- Get the device ---- #
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    logging.info(f"***************** In device {device}  *****************")
+
+    # ---- For loop to read ---- #
+    final_pred_df = None
+    stock_csv_list = sorted(os.listdir(f"{config.FACTOR_DATA_PATH}/test_csv"))
+    for stock_csv in stock_csv_list:
+        stock_df = pd.read_csv(f"{config.FACTOR_DATA_PATH}/test_csv/{stock_csv}")
+        # build up data
+        test_dataset = FactoDataset(
+            root_path=config.FACTOR_DATA_PATH, time_steps=config.TIME_STEPS,
+            stock_file_list=[stock_csv.replace(".csv", ".npz")],
+            data_type="test"
+        )
+        test_loader = data.DataLoader(dataset=test_dataset, batch_size=config.BATCH_SIZE, shuffle=False)  # the valid dataloader
+        logging.info(f"Test dataset: length = {len(test_dataset)}")
+        preds_single_stock = torch.zeros(len(test_dataset)).to(device=device)
+        labels_single_stock = torch.zeros(len(test_dataset)).to(device=device)
+        # load model
+        model, model_path = load_best_model(os_model_save_path, "valid_F1")
+        logging.info(f"Load best mode {model_path}")
+        # predict
+        last_step = 0
+        with torch.no_grad():
+            for batch_data in tqdm(test_loader):
+                # move data to device
+                features, labels = batch_data["feature"].to(device=device), batch_data["label"].to(device=device)
+                # forward to compute outputs, different model have different loss
+                preds = model(features)
+                # doc the result in one iter
+                now_step = last_step + preds.shape[0]
+                preds_single_stock[last_step:now_step] = preds[:, 0].detach()
+                labels_single_stock[last_step:now_step] = labels[:, 0].detach()
+                last_step = now_step
+        preds_single_stock_array = preds_single_stock.cpu().numpy()
+        stock_df["preds"] = preds_single_stock_array
+        stock_df = stock_df[["Date", "preds"]].rename(columns={"preds": stock_csv[:-4]})
+        if final_pred_df is None:
+            final_pred_df = stock_df
+        else:
+            final_pred_df = pd.merge(final_pred_df, stock_df, on="Date", how="outer")
+    print(final_pred_df.isnull().sum().sum())
+    # final_pred_df.to_csv(f"20240102_20240529.csv", index=False)
+
+
 if __name__ == "__main__":
     # ---- Prepare some environments for training and prediction ---- #
     # fix the random seed
@@ -216,8 +273,11 @@ if __name__ == "__main__":
     # construct the train&valid log file
     logging.basicConfig(filename=LOG_FILE, format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
 
-    # ---- Step 1. Train & Valid model ---- #
-    os_train_valid_model(root_save_path=SAVE_PATH)
+    # # ---- Step 1. Train & Valid model ---- #
+    # os_train_valid_model(root_save_path=SAVE_PATH)
+    #
+    # # ---- Step 2. Pred model ---- #
+    # os_pred_model(root_save_path=SAVE_PATH)
 
-    # ---- Step 2. Pred model ---- #
-    os_pred_model(root_save_path=SAVE_PATH)
+    # ---- Step 3. Pred for each book ---- #
+    pred_for_each_stock(root_save_path=SAVE_PATH)
