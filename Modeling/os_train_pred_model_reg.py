@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 from utils import fix_random_seed
 import config as config
 from factor_dataset import FactoDataset
-from model.mlp import MLP_Net
+from model.nets.mlp import MLP_Net
 from model.loss import MSE_Loss
 from model.metrics import r2_score, corr_score, accuracy_score, f1_score
 from utils import load_best_model
