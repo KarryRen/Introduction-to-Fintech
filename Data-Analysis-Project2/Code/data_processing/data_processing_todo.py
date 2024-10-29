@@ -49,4 +49,4 @@ def add_label():
 
 if __name__ == "__main__":
     embedding_df = load_embedding("../../../Data/text_factors/embedding.pkl")
-    embedding_df.to_pkl("../../../Data/text_factors/processed_embedding_df.pkl")
+    embedding_df.to_pickle("../../../Data/text_factors/processed_embedding_df.pkl")
