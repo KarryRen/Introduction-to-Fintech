@@ -37,9 +37,33 @@ def generate_label(future_horizon):
     """ 未来future_horizon天的收益率"""
     pass
 
-def add_label():
-    """ 加入label,merge的时候使用left，以embedding数据为准 """
-    pass
+def add_label(horizon_list,DATA_DIR=r'"E:\Graduatedwork\Courses\Fintech\Assignment\data"'):
+    """ 
+    horizon_list: list contains length of future days to calcalate return as lable 
+    """
+    volume = pd.read_hdf(f'{DATA_DIR}/volume.h5', key='df')
+    amount = pd.read_hdf(f'{DATA_DIR}/amount.h5', key='df')
+    volume = volume[volume.index>=pd.to_datetime("2019-01-01")]
+    amount = amount[amount.index>=pd.to_datetime("2019-01-01")]
+    backadj = pd.read_hdf(f'{DATA_DIR}/back_adj.h5', key='df')
+    backadj = backadj[backadj.index>=pd.to_datetime("2019-01-01")]
+    backadj = backadj.groupby(backadj.index.date).mean()
+
+    def part_sum(df ):
+        res = df.between_time('09:30',"09:40")
+        res = res.groupby(res.index.date).sum()
+        return res
+    trade_vwap = part_sum(amount)/part_sum(volume) *backadj 
+    for horizon in horizon_list:
+        daily_return = trade_vwap.shift(-horizon)/trade_vwap - 1
+        Label = daily_return.shift(1)
+        Label.index = Label.index.astype(str).str.replace('-','')
+        Label.columns = Label.columns.str.lower()
+        Label = Label.unstack()
+        Label = Label.reset_index()
+        Label.columns = ['stockCode',"publishDate",f'Label_{horizon}']
+        embedding_df = pd.merge(embedding_df,Label,how='left',on= ['stockCode',"publishDate"])
+    return embedding_df
 
 # 5. 结果分析
 
