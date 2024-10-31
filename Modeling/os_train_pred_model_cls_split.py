@@ -18,7 +18,7 @@ from sklearn import metrics
 from utils import fix_random_seed
 import config as config
 from factor_dataset import FactoDataset
-from model.nets.mlp import MLP_Net
+from model.nets import MLP_Net, Big_MLP_Net, GRU_Net, LSTM_Net, Conv_Net, Transformer_Net
 from model.loss import CE_Loss
 from utils import load_best_model
 

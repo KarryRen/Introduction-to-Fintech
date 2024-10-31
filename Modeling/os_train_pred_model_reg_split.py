@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 from utils import fix_random_seed
 import config as config
 from factor_dataset import FactoDataset
-from model.nets.mlp import MLP_Net
+from model.nets import MLP_Net, Big_MLP_Net, GRU_Net, LSTM_Net, Conv_Net, Transformer_Net
 from model.loss import MSE_Loss
 from model.metrics import r2_score, corr_score, accuracy_score, f1_score
 from utils import load_best_model
@@ -47,7 +47,20 @@ def os_train_valid_model(root_save_path: str) -> None:
     logging.info(f"Valid dataset: length = {len(valid_dataset)}")
 
     # ---- Construct the model and transfer device, while making loss and optimizer ---- #
-    model = MLP_Net(input_size=config.FACTOR_NUM, out_size=1, device=device)
+    if config.MODEL == "MLP":
+        model = MLP_Net(input_size=config.FACTOR_NUM, out_size=1, device=device)
+    elif config.MODEL == "Big_MLP":
+        model = Big_MLP_Net(input_size=config.FACTOR_NUM, out_size=1, device=device)
+    elif config.MODEL == "Conv":
+        model = Conv_Net(device=device)
+    elif config.MODEL == "GRU":
+        model = GRU_Net(input_size=config.FACTOR_NUM, out_size=1, device=device)
+    elif config.MODEL == "LSTM":
+        model = LSTM_Net(input_size=config.FACTOR_NUM, out_size=1, device=device)
+    elif config.MODEL == "Transformer":
+        model = Transformer_Net(d_feat=config.FACTOR_NUM, out_size=1, device=device)
+    else:
+        raise ValueError(config.MODEL)
     # the loss function
     criterion = MSE_Loss(reduction=config.LOSS_REDUCTION)
     # the optimizer
@@ -129,7 +142,6 @@ def os_train_valid_model(root_save_path: str) -> None:
                      f"{['%s:%.4f ' % (key, value[epoch]) for key, value in epoch_metric.items()]}")
     # save the metric
     pd.DataFrame(epoch_metric).to_csv(f"{os_model_save_path}/model_metric.csv")
-    # draw figure of train and valid metrics
     # draw figure of train and valid metrics
     plt.figure(figsize=(15, 6))
     plt.subplot(3, 1, 1)

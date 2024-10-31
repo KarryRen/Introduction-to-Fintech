@@ -53,17 +53,17 @@ def ss_train_valid_model(stock_file_name: str, root_save_path: str) -> None:
 
     # ---- Construct the model and transfer device, while making loss and optimizer ---- #
     if config.MODEL == "MLP":
-        model = MLP_Net(input_size=config.FACTOR_NUM, device=device)
+        model = MLP_Net(input_size=config.FACTOR_NUM, out_size=1, device=device)
     elif config.MODEL == "Big_MLP":
-        model = Big_MLP_Net(input_size=config.FACTOR_NUM, device=device)
+        model = Big_MLP_Net(input_size=config.FACTOR_NUM, out_size=1, device=device)
     elif config.MODEL == "Conv":
         model = Conv_Net(device=device)
     elif config.MODEL == "GRU":
-        model = GRU_Net(input_size=config.FACTOR_NUM, device=device)
+        model = GRU_Net(input_size=config.FACTOR_NUM, out_size=1, device=device)
     elif config.MODEL == "LSTM":
-        model = LSTM_Net(input_size=config.FACTOR_NUM, device=device)
+        model = LSTM_Net(input_size=config.FACTOR_NUM, out_size=1, device=device)
     elif config.MODEL == "Transformer":
-        model = Transformer_Net(d_feat=config.FACTOR_NUM, device=device)
+        model = Transformer_Net(d_feat=config.FACTOR_NUM, out_size=1, device=device)
     else:
         raise ValueError(config.MODEL)
     # the loss function
