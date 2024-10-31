@@ -6,11 +6,20 @@
 
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 data_root_path = "../../../Data"
 
-# ---- Read the data ---- #
+# ---- Read the data & do visualization ---- #
+# read
 factors_df = pd.read_pickle(f"{data_root_path}/all_factors.pkl")  # length = 606475
+# visual
+nan_num = factors_df.isnull().sum(axis=1) / len(factors_df.columns)
+plt.figure(dpi=300)
+sns.distplot(np.array(nan_num), hist=True, kde=True, color="b")
+plt.xlabel("Percentage of NaN Factors")
+plt.savefig(f"nan_num_percentage.png", bbox_inches="tight")
 
 # ---- Select the feature columns ---- #
 all_column_list = list(factors_df.columns)  # get the column list
@@ -29,7 +38,6 @@ factors_df = factors_df.dropna(axis=0, subset=["Label"])  # length = 605151
 # use the feature to select, the total number of nan in one line should <= thresh
 factors_num_thresh = 3 + 0.1 * factors_num  # the threshold of factors number
 factors_df = factors_df[factors_df.isnull().sum(axis=1) <= factors_num_thresh]  # length = 449765
-print(len(factors_df))
 
 # ---- Do the feature normalization (z-score) and Adjust the Label value ---- #
 factors_df_normed = factors_df[["Date", "Code", "Label"]]  # the empty normed factors
@@ -47,6 +55,12 @@ for factor in factors_list:
 # return times 100 and get %
 factors_df_normed["Label"] = factors_df_normed["Label"] * 100
 assert not factors_df_normed.isnull().values.any(), "There are NaNs in factors_df_normed !!!"
+
+normed_factor_data = np.array(factors_df_normed[factors_list])
+print(normed_factor_data.min(), normed_factor_data.max())
+sns.distplot(normed_factor_data, hist=True, kde=True, color="b")
+plt.xlabel("Factor Value")
+plt.savefig(f"normed_factors_data.png", bbox_inches="tight")
 
 # ---- Save it to npz ---- #
 stock_list = sorted(factors_df_normed["Code"].unique())
