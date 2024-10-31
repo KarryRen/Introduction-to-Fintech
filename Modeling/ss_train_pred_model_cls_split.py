@@ -226,15 +226,16 @@ if __name__ == "__main__":
     # construct the train&valid log file
     logging.basicConfig(filename=LOG_FILE, format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
     stock_file_list = sorted(os.listdir(f"{config.FACTOR_DATA_PATH}/lag_{config.TIME_STEPS}"))
+    i = 1
 
     # ---- Step 1. Train & Valid model ---- #
-    for stock_file in stock_file_list[3:4]:
+    for stock_file in stock_file_list[i:i + 1]:
         ss_train_valid_model(stock_file_name=stock_file, root_save_path=SAVE_PATH)
 
     # ---- Step 2. Pred model ---- #
     # do the pred
     ss_pred_array_list, ss_label_array_list = [], []  # define empty list
-    for stock_file in stock_file_list[3:4]:
+    for stock_file in stock_file_list[i:i + 1]:
         ss_pred_array, ss_label_array = ss_pred_model(stock_file_name=stock_file, root_save_path=SAVE_PATH)
         ss_pred_array_list.append(ss_pred_array)
         ss_label_array_list.append(ss_label_array)

@@ -217,7 +217,7 @@ if __name__ == "__main__":
     logging.basicConfig(filename=LOG_FILE, format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
     stock_file_list = sorted(os.listdir(f"{config.FACTOR_DATA_PATH}/lag_{config.TIME_STEPS}"))
 
-    i = 0
+    i = 1
     # ---- Step 1. Train & Valid model ---- #
     for stock_file in stock_file_list[i:i + 1]:
         ss_train_valid_model(stock_file_name=stock_file, root_save_path=SAVE_PATH)
