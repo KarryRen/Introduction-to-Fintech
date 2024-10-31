@@ -18,7 +18,7 @@ from sklearn import metrics
 from utils import fix_random_seed
 import config as config
 from factor_dataset import FactoDataset
-from model.nets import MLP_Net, GRU_Net, LSTM_Net, Conv_Net, Transformer_Net
+from model.nets import MLP_Net, Big_MLP_Net, GRU_Net, LSTM_Net, Conv_Net, Transformer_Net
 from model.loss import CE_Loss
 from utils import load_best_model
 
@@ -53,6 +53,8 @@ def ss_train_valid_model(stock_file_name: str, root_save_path: str) -> None:
     # ---- Construct the model and transfer device, while making loss and optimizer ---- #
     if config.MODEL == "MLP":
         model = MLP_Net(input_size=config.FACTOR_NUM, device=device)
+    elif config.MODEL == "Big_MLP":
+        model = Big_MLP_Net(input_size=config.FACTOR_NUM, device=device)
     elif config.MODEL == "Conv":
         model = Conv_Net(device=device)
     elif config.MODEL == "GRU":
@@ -129,7 +131,7 @@ def ss_train_valid_model(stock_file_name: str, root_save_path: str) -> None:
             y_true=valid_labels_one_epoch.cpu().numpy(), y_pred=valid_preds_one_epoch.cpu().numpy()
         )
         epoch_metric["valid_F1"][epoch] = metrics.f1_score(
-            y_true=valid_labels_one_epoch.cpu().numpy(), y_pred=valid_preds_one_epoch.cpu().numpy(), average="micro"
+            y_true=valid_labels_one_epoch.cpu().numpy(), y_pred=valid_preds_one_epoch.cpu().numpy(), average="macro"
         )
         # save model&model_config and metrics
         if epoch >= 0.95 * config.EPOCHS:
@@ -233,5 +235,5 @@ if __name__ == "__main__":
     print(
         f"{len(stock_file_list)} overall stocks, {all_pred_array.shape[0]} samples: "
         f"ACC={metrics.accuracy_score(y_true=all_label_array, y_pred=all_pred_array)}, "
-        f"F1={metrics.f1_score(y_true=all_label_array, y_pred=all_pred_array, average='micro')}"
+        f"F1={metrics.f1_score(y_true=all_label_array, y_pred=all_pred_array, average='macro')}"
     )

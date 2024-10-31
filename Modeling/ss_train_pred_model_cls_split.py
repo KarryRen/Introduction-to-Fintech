@@ -101,7 +101,7 @@ def ss_train_valid_model(stock_file_name: str, root_save_path: str) -> None:
             y_true=train_labels_one_epoch.cpu().numpy(), y_pred=train_preds_one_epoch.cpu().numpy()
         )
         epoch_metric["train_F1"][epoch] = metrics.f1_score(
-            y_true=train_labels_one_epoch.cpu().numpy(), y_pred=train_preds_one_epoch.cpu().numpy(), average="micro"
+            y_true=train_labels_one_epoch.cpu().numpy(), y_pred=train_preds_one_epoch.cpu().numpy(), average="macro"
         )
         # - valid model
         last_step = 0
@@ -126,7 +126,7 @@ def ss_train_valid_model(stock_file_name: str, root_save_path: str) -> None:
             y_true=valid_labels_one_epoch.cpu().numpy(), y_pred=valid_preds_one_epoch.cpu().numpy()
         )
         epoch_metric["valid_F1"][epoch] = metrics.f1_score(
-            y_true=valid_labels_one_epoch.cpu().numpy(), y_pred=valid_preds_one_epoch.cpu().numpy(), average="micro"
+            y_true=valid_labels_one_epoch.cpu().numpy(), y_pred=valid_preds_one_epoch.cpu().numpy(), average="macro"
         )
         # save model&model_config and metrics
         torch.save(model, f"{ss_model_save_path}/model_pytorch_epoch_{epoch}")
@@ -147,7 +147,7 @@ def ss_train_valid_model(stock_file_name: str, root_save_path: str) -> None:
     plt.plot(epoch_metric["valid_ACC"], label="valid ACC", color="b")
     plt.legend()
     plt.subplot(2, 2, 4)
-    plt.plot(epoch_metric["train_F1"], label="valid ACC", color="g")
+    plt.plot(epoch_metric["train_F1"], label="train F1", color="g")
     plt.plot(epoch_metric["valid_F1"], label="valid F1", color="b")
     plt.legend()
     plt.savefig(f"{ss_save_path}/training_steps.png", dpi=200, bbox_inches="tight")
@@ -215,23 +215,21 @@ if __name__ == "__main__":
     stock_file_list = sorted(os.listdir(f"{config.FACTOR_DATA_PATH}/lag_{config.TIME_STEPS}"))
 
     # ---- Step 1. Train & Valid model ---- #
-    for stock_file in stock_file_list:
+    for stock_file in stock_file_list[3:4]:
         ss_train_valid_model(stock_file_name=stock_file, root_save_path=SAVE_PATH)
-        break
 
     # ---- Step 2. Pred model ---- #
     # do the pred
     ss_pred_array_list, ss_label_array_list = [], []  # define empty list
-    for stock_file in stock_file_list:
+    for stock_file in stock_file_list[3:4]:
         ss_pred_array, ss_label_array = ss_pred_model(stock_file_name=stock_file, root_save_path=SAVE_PATH)
         ss_pred_array_list.append(ss_pred_array)
         ss_label_array_list.append(ss_label_array)
-        break
     # do the concat
     all_pred_array = np.concatenate(ss_pred_array_list, axis=0)
     all_label_array = np.concatenate(ss_label_array_list, axis=0)
     print(
         f"{len(stock_file_list)} overall stocks, {all_pred_array.shape[0]} samples: "
         f"ACC={metrics.accuracy_score(y_true=all_label_array, y_pred=all_pred_array)}, "
-        f"F1={metrics.f1_score(y_true=all_label_array, y_pred=all_pred_array, average='micro')}"
+        f"F1={metrics.f1_score(y_true=all_label_array, y_pred=all_pred_array, average='macro')}"
     )
