@@ -27,7 +27,9 @@ class MLP_Net(nn.Module):
 
         # ---- Build up the model ---- #
         self.mlp = nn.Sequential(
-            nn.Linear(in_features=input_size, out_features=hidden_size, bias=False),
+            nn.Linear(in_features=input_size, out_features=hidden_size * 2, bias=False),
+            nn.ReLU(),
+            nn.Linear(in_features=hidden_size * 2, out_features=hidden_size, bias=False),
             nn.ReLU()
         ).to(device=device)
         self.fc = nn.Linear(in_features=hidden_size, out_features=out_size).to(device=device)

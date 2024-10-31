@@ -14,13 +14,12 @@ from tqdm import tqdm
 from datetime import datetime
 import pandas as pd
 import matplotlib.pyplot as plt
-from sklearn import metrics
 
 from utils import fix_random_seed
 import config as config
 from factor_dataset import FactoDataset
 from model.nets.mlp import MLP_Net
-from model.loss import CE_Loss
+from model.loss import MSE_Loss
 from utils import load_best_model
 from model.metrics import r2_score, corr_score, accuracy_score, f1_score
 
@@ -55,7 +54,7 @@ def ss_train_valid_model(stock_file_name: str, root_save_path: str) -> None:
     # ---- Construct the model and transfer device, while making loss and optimizer ---- #
     model = MLP_Net(input_size=config.FACTOR_NUM, out_size=1, device=device)
     # the loss function
-    criterion = CE_Loss(reduction=config.LOSS_REDUCTION)
+    criterion = MSE_Loss(reduction=config.LOSS_REDUCTION)
     # the optimizer
     optimizer = torch.optim.Adam(model.parameters(), lr=config.LR)
 
@@ -147,7 +146,7 @@ def ss_train_valid_model(stock_file_name: str, root_save_path: str) -> None:
     plt.subplot(3, 2, 6)
     plt.plot(epoch_metric["valid_F1"], label="valid F1", color="b")
     plt.legend()
-    plt.savefig(f"{root_save_path}/training_steps.png", dpi=200, bbox_inches="tight")
+    plt.savefig(f"{root_save_path}/{stock_file_name}/training_steps.png", dpi=200, bbox_inches="tight")
     logging.info("***************** TRAINING OVER ! *****************")
 
 
@@ -211,7 +210,7 @@ if __name__ == "__main__":
     stock_file_list = sorted(os.listdir(f"{config.FACTOR_DATA_PATH}/lag_{config.TIME_STEPS}"))
 
     # ---- Step 1. Train & Valid model ---- #
-    for stock_file in stock_file_list:
+    for stock_file in stock_file_list[1:]:
         ss_train_valid_model(stock_file_name=stock_file, root_save_path=SAVE_PATH)
 
     # ---- Step 2. Pred model ---- #
