@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2024/10/19 17:00
-# @Author  : Karry Ren
+# @Author  : YiMing Jiang
 
-""" Get the research text data from the website. """
+""" Get the research text data from the website.
+
+https://data.eastmoney.com/report/stock.jshtml.
+
+"""
 
 import requests
 import demjson3
@@ -10,7 +14,7 @@ import json
 import pandas as pd
 from bs4 import BeautifulSoup
 
-# https://data.eastmoney.com/report/stock.jshtml
+
 msg = json.loads(requests.post("https://reportapi.eastmoney.com/report/list2",
                                data=demjson3.encode({"beginTime": '2019-01-01', "endTime": '2024-06-01', "pageNo": 1}),
                                headers={"content-type": "application/json"}).text)
@@ -24,4 +28,5 @@ df["url"] = df["infoCode"].apply(lambda x: "https://data.eastmoney.com/report/in
 for idx in df.index:
     df.loc[idx, "content"] = BeautifulSoup(requests.get(df.loc[idx, "url"]).text, features='lxml').select('div.newsContent')[0].get_text().replace(
         "\n", "").replace(" ", "").replace("\u3000", "").replace("\r", "")
+
 df.to_csv("./个股研报列表(含内容).csv", index=False, encoding='utf-8-sig')
