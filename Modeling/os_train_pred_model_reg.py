@@ -125,7 +125,6 @@ def os_train_valid_model(root_save_path: str) -> None:
     # save the metric
     pd.DataFrame(epoch_metric).to_csv(f"{os_model_save_path}/model_metric.csv")
     # draw figure of train and valid metrics
-    # draw figure of train and valid metrics
     plt.figure(figsize=(15, 6))
     plt.subplot(3, 1, 1)
     plt.plot(epoch_metric["train_loss"], label="train loss", color="g")

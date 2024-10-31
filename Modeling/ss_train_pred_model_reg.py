@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-# @Time    : 2024/10/28 20:35
+# @Time    : 2024/10/31 14:15
 # @Author  : Karry Ren
 
-""" Training and Prediction code. (classification) for single stock one by one. """
+
+""" Training and Prediction code. (regression) for single stock one by one. """
 
 import os
 import logging
@@ -21,6 +22,7 @@ from factor_dataset import FactoDataset
 from model.nets.mlp import MLP_Net
 from model.loss import CE_Loss
 from utils import load_best_model
+from model.metrics import r2_score, corr_score, accuracy_score, f1_score
 
 
 def ss_train_valid_model(stock_file_name: str, root_save_path: str) -> None:
@@ -51,7 +53,7 @@ def ss_train_valid_model(stock_file_name: str, root_save_path: str) -> None:
     logging.info(f"Valid dataset: length = {len(valid_dataset)}")
 
     # ---- Construct the model and transfer device, while making loss and optimizer ---- #
-    model = MLP_Net(input_size=config.FACTOR_NUM, device=device)
+    model = MLP_Net(input_size=config.FACTOR_NUM, out_size=1, device=device)
     # the loss function
     criterion = CE_Loss(reduction=config.LOSS_REDUCTION)
     # the optimizer
@@ -61,6 +63,7 @@ def ss_train_valid_model(stock_file_name: str, root_save_path: str) -> None:
     # init the metric dict of all epochs
     epoch_metric = {
         "train_loss": np.zeros(config.EPOCHS), "valid_loss": np.zeros(config.EPOCHS),
+        "valid_R2": np.zeros(config.EPOCHS), "valid_CORR": np.zeros(config.EPOCHS),
         "valid_ACC": np.zeros(config.EPOCHS), "valid_F1": np.zeros(config.EPOCHS)
     }
     # start train and valid during train
@@ -79,7 +82,7 @@ def ss_train_valid_model(stock_file_name: str, root_save_path: str) -> None:
         model.train()
         for batch_data in tqdm(train_loader):
             # move data to device
-            features, labels = batch_data["feature"].to(device=device), batch_data["sign_label"].to(device=device)
+            features, labels = batch_data["feature"].to(device=device), batch_data["label"].to(device=device)
             # zero_grad, forward, compute loss, backward and optimize
             optimizer.zero_grad()
             preds = model(features)
@@ -90,8 +93,8 @@ def ss_train_valid_model(stock_file_name: str, root_save_path: str) -> None:
             train_loss_one_epoch.append(loss.item())
             # note the result in one iter
             now_step = last_step + preds.shape[0]
-            train_preds_one_epoch[last_step:now_step] = torch.argmax(torch.softmax(preds, dim=1), dim=1).detach()
-            train_labels_one_epoch[last_step:now_step] = labels.detach()
+            train_preds_one_epoch[last_step:now_step] = preds[:, 0].detach()
+            train_labels_one_epoch[last_step:now_step] = labels[:, 0].detach()
             last_step = now_step
         # note the loss and metrics for one epoch of TRAINING
         epoch_metric["train_loss"][epoch] = np.mean(train_loss_one_epoch)
@@ -101,7 +104,7 @@ def ss_train_valid_model(stock_file_name: str, root_save_path: str) -> None:
         with torch.no_grad():
             for batch_data in tqdm(valid_loader):
                 # move data to device
-                features, labels = batch_data["feature"].to(device=device), batch_data["sign_label"].to(device=device)
+                features, labels = batch_data["feature"].to(device=device), batch_data["label"].to(device=device)
                 # forward to compute outputs, different model have different loss
                 preds = model(features)
                 loss = criterion(y_true=labels, y_pred=preds)
@@ -109,17 +112,15 @@ def ss_train_valid_model(stock_file_name: str, root_save_path: str) -> None:
                 valid_loss_one_epoch.append(loss.item())
                 # doc the result in one iter
                 now_step = last_step + preds.shape[0]
-                valid_preds_one_epoch[last_step:now_step] = torch.argmax(torch.softmax(preds, dim=1), dim=1).detach()
-                valid_labels_one_epoch[last_step:now_step] = labels.detach()
+                valid_preds_one_epoch[last_step:now_step] = preds[:, 0].detach()
+                valid_labels_one_epoch[last_step:now_step] = labels[:, 0].detach()
                 last_step = now_step
         # note the loss and all metrics for one epoch of VALID
         epoch_metric["valid_loss"][epoch] = np.mean(valid_loss_one_epoch)
-        epoch_metric["valid_ACC"][epoch] = metrics.accuracy_score(
-            y_true=valid_labels_one_epoch.cpu().numpy(), y_pred=valid_preds_one_epoch.cpu().numpy()
-        )
-        epoch_metric["valid_F1"][epoch] = metrics.f1_score(
-            y_true=valid_labels_one_epoch.cpu().numpy(), y_pred=valid_preds_one_epoch.cpu().numpy(), average="micro"
-        )
+        epoch_metric["valid_R2"][epoch] = r2_score(y_true=valid_labels_one_epoch.cpu().numpy(), y_pred=valid_preds_one_epoch.cpu().numpy())
+        epoch_metric["valid_CORR"][epoch] = corr_score(y_true=valid_labels_one_epoch.cpu().numpy(), y_pred=valid_preds_one_epoch.cpu().numpy())
+        epoch_metric["valid_ACC"][epoch] = accuracy_score(y_true=valid_labels_one_epoch.cpu().numpy(), y_pred=valid_preds_one_epoch.cpu().numpy())
+        epoch_metric["valid_F1"][epoch] = f1_score(y_true=valid_labels_one_epoch.cpu().numpy(), y_pred=valid_preds_one_epoch.cpu().numpy())
         # save model&model_config and metrics
         if epoch >= 0.95 * config.EPOCHS:
             torch.save(model, f"{ss_model_save_path}/model_pytorch_epoch_{epoch}")
@@ -129,19 +130,24 @@ def ss_train_valid_model(stock_file_name: str, root_save_path: str) -> None:
                      f"{['%s:%.4f ' % (key, value[epoch]) for key, value in epoch_metric.items()]}")
     # save the metric
     pd.DataFrame(epoch_metric)[int(0.95 * config.EPOCHS + 1):].to_csv(f"{ss_model_save_path}/model_metric.csv")
-    # draw figure of train and valid metrics
     plt.figure(figsize=(15, 6))
-    plt.subplot(2, 1, 1)
+    plt.subplot(3, 1, 1)
     plt.plot(epoch_metric["train_loss"], label="train loss", color="g")
     plt.plot(epoch_metric["valid_loss"], label="valid loss", color="b")
     plt.legend()
-    plt.subplot(2, 2, 3)
+    plt.subplot(3, 2, 3)
+    plt.plot(epoch_metric["valid_R2"], label="valid R2", color="b")
+    plt.legend()
+    plt.subplot(3, 2, 4)
+    plt.plot(epoch_metric["valid_CORR"], label="valid CORR", color="b")
+    plt.legend()
+    plt.subplot(3, 2, 5)
     plt.plot(epoch_metric["valid_ACC"], label="valid ACC", color="b")
     plt.legend()
-    plt.subplot(2, 2, 4)
+    plt.subplot(3, 2, 6)
     plt.plot(epoch_metric["valid_F1"], label="valid F1", color="b")
     plt.legend()
-    plt.savefig(f"{ss_save_path}/training_steps.png", dpi=200, bbox_inches="tight")
+    plt.savefig(f"{root_save_path}/training_steps.png", dpi=200, bbox_inches="tight")
     logging.info("***************** TRAINING OVER ! *****************")
 
 
@@ -152,8 +158,8 @@ def ss_pred_model(stock_file_name: str, root_save_path: str):
     :param root_save_path: root save path.
 
     :return:
-        - preds_one_stock: the preds of single stock
-        - labels_one_stock: the labels of single stock
+        - preds_single_stock: the preds of single stock
+        - labels_single_stock: the labels of single stock
     """
 
     # ---- Some basic setting ---- #
@@ -167,8 +173,8 @@ def ss_pred_model(stock_file_name: str, root_save_path: str):
     test_dataset = FactoDataset(root_path=config.FACTOR_DATA_PATH, time_steps=config.TIME_STEPS, stock_file_list=[stock_file_name])
     test_loader = data.DataLoader(dataset=test_dataset, batch_size=config.BATCH_SIZE, shuffle=False)  # the valid dataloader
     logging.info(f"Test dataset: length = {len(test_dataset)}")
-    preds_one_stock = torch.zeros(len(test_dataset)).to(device=device)
-    labels_one_stock = torch.zeros(len(test_dataset)).to(device=device)
+    preds_single_stock = torch.zeros(len(test_dataset)).to(device=device)
+    labels_single_stock = torch.zeros(len(test_dataset)).to(device=device)
 
     # ---- Construct the model and transfer device, while making loss and optimizer ---- #
     model, model_path = load_best_model(ss_model_save_path, "valid_F1")
@@ -178,17 +184,17 @@ def ss_pred_model(stock_file_name: str, root_save_path: str):
     with torch.no_grad():
         for batch_data in tqdm(test_loader):
             # move data to device
-            features, labels = batch_data["feature"].to(device=device), batch_data["sign_label"].to(device=device)
+            features, labels = batch_data["feature"].to(device=device), batch_data["label"].to(device=device)
             # forward to compute outputs, different model have different loss
             preds = model(features)
             # doc the result in one iter
             now_step = last_step + preds.shape[0]
-            preds_one_stock[last_step:now_step] = torch.argmax(torch.softmax(preds, dim=1), dim=1).detach()
-            labels_one_stock[last_step:now_step] = labels.detach()
+            preds_single_stock[last_step:now_step] = preds[:, 0].detach()
+            labels_single_stock[last_step:now_step] = labels[:, 0].detach()
             last_step = now_step
 
     # ---- Return ss result ---- #
-    return preds_one_stock.cpu().numpy(), labels_one_stock.cpu().numpy()
+    return preds_single_stock.cpu().numpy(), labels_single_stock.cpu().numpy()
 
 
 if __name__ == "__main__":
@@ -196,7 +202,7 @@ if __name__ == "__main__":
     # fix the random seed
     fix_random_seed(seed=config.RANDOM_SEED)
     # build up the PATH
-    SAVE_PATH = f"exp_ss_cls/rs_{config.RANDOM_SEED}"
+    SAVE_PATH = f"exp_ss_reg/rs_{config.RANDOM_SEED}"
     LOG_FILE = f"{SAVE_PATH}/log_file.log"
     # build up the save directory of the PATH
     os.makedirs(SAVE_PATH, exist_ok=True)
@@ -221,6 +227,8 @@ if __name__ == "__main__":
     # compute the metrics
     print(
         f"{len(stock_file_list)} overall stocks, {all_pred_array.shape[0]} samples: "
-        f"ACC={metrics.accuracy_score(y_true=all_label_array, y_pred=all_pred_array)}, "
-        f"F1={metrics.f1_score(y_true=all_label_array, y_pred=all_pred_array, average='micro')}"
+        f"ACC={accuracy_score(y_true=all_label_array, y_pred=all_pred_array)}, "
+        f"F1={f1_score(y_true=all_label_array, y_pred=all_pred_array)}, "
+        f"R2={r2_score(y_true=all_label_array, y_pred=all_pred_array)}, "
+        f"CORR={corr_score(y_true=all_label_array, y_pred=all_pred_array)}, "
     )
