@@ -13,7 +13,7 @@ data_root_path = "../../../Data"
 factors_df = pd.read_pickle(f"{data_root_path}/all_factors.pkl")  # length = 606475
 
 # ---- Select the feature columns ---- #
-all_column_list = list(factors_df.columns)  # get the
+all_column_list = list(factors_df.columns)  # get the column list
 util_columns = ["Code", "Date", "Label"]
 daily_trading_factor_list = all_column_list[2:2 + 26]  # 26 daily trading factors
 high_freq_factor_list = all_column_list[29:29 + 64]  # 64 min to daily factors
