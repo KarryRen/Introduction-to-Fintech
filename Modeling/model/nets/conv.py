@@ -56,7 +56,7 @@ class Conv_Net(nn.Module):
         return output
 
 
-if __name__ == "__main__":  # A demo using MLP_Net
+if __name__ == "__main__":  # A demo using Conv_Net
     bath_size, time_steps, feature_dim = 64, 1, 167
     hidden_size = 64
     feature = torch.ones((bath_size, time_steps, feature_dim))

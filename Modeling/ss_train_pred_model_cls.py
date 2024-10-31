@@ -18,8 +18,7 @@ from sklearn import metrics
 from utils import fix_random_seed
 import config as config
 from factor_dataset import FactoDataset
-from model.nets.mlp import MLP_Net
-from model.nets.conv import Conv_Net
+from model.nets import MLP_Net, GRU_Net, LSTM_Net, Conv_Net, Transformer_Net
 from model.loss import CE_Loss
 from utils import load_best_model
 
@@ -56,6 +55,12 @@ def ss_train_valid_model(stock_file_name: str, root_save_path: str) -> None:
         model = MLP_Net(input_size=config.FACTOR_NUM, device=device)
     elif config.MODEL == "Conv":
         model = Conv_Net(device=device)
+    elif config.MODEL == "GRU":
+        model = GRU_Net(input_size=config.FACTOR_NUM, device=device)
+    elif config.MODEL == "LSTM":
+        model = LSTM_Net(input_size=config.FACTOR_NUM, device=device)
+    elif config.MODEL == "Transformer":
+        model = Transformer_Net(d_feat=config.FACTOR_NUM, device=device)
     else:
         raise ValueError(config.MODEL)
     # the loss function
@@ -213,7 +218,6 @@ if __name__ == "__main__":
     # ---- Step 1. Train & Valid model ---- #
     for stock_file in stock_file_list:
         ss_train_valid_model(stock_file_name=stock_file, root_save_path=SAVE_PATH)
-        break
 
     # ---- Step 2. Pred model ---- #
     # do the pred
@@ -222,7 +226,6 @@ if __name__ == "__main__":
         ss_pred_array, ss_label_array = ss_pred_model(stock_file_name=stock_file, root_save_path=SAVE_PATH)
         ss_pred_array_list.append(ss_pred_array)
         ss_label_array_list.append(ss_label_array)
-        break
     # do the concat
     all_pred_array = np.concatenate(ss_pred_array_list, axis=0)
     all_label_array = np.concatenate(ss_label_array_list, axis=0)

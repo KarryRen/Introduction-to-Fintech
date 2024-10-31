@@ -1,5 +1,75 @@
 # -*- coding: utf-8 -*-
-# @Time    : 2024/10/29 22:41
+# @Time    : 2024/4/6 15:15
 # @Author  : Karry Ren
 
-""""""
+""" The Comparison Methods 1: GRU.
+
+Ref. https://github.com/microsoft/qlib/blob/main/qlib/contrib/model/pytorch_gru.py#L294
+
+"""
+
+import logging
+import torch
+from torch import nn
+
+
+class GRU_Net(nn.Module):
+    """ The 2 Layer GRU. hidden_size=64. """
+
+    def __init__(
+            self, input_size: int, hidden_size: int = 64, out_size: int = 3,
+            num_layers: int = 2, dropout: float = 0.0, device: torch.device = torch.device("cpu")
+    ):
+        """ The init function of GRU_Net Net.
+
+        :param input_size: input size for each time step
+        :param hidden_size: hidden size of gru
+        :param num_layers: the num of gru layers
+        :param dropout: the dropout ratio
+        :param device: the computing device
+
+        """
+
+        super(GRU_Net, self).__init__()
+        self.device = device
+
+        # ---- Log the info of Multi-Grained GRU ---- #
+        logging.info(
+            f"|||| Using Multi-Grained GRU Now ! input_size={input_size}, "
+            f"hidden_size={hidden_size}, num_layers={num_layers}, dropout_ratio={dropout}||||"
+        )
+
+        # ---- Part 1. The GRU module ---- #
+        self.gru = nn.GRU(
+            input_size=input_size, hidden_size=hidden_size, num_layers=num_layers, batch_first=True, dropout=dropout
+        ).to(device=device)
+
+        # ---- Part 2. The output fully connect layer ---- #
+        self.fc = nn.Linear(hidden_size, out_size).to(device=device)
+
+    def forward(self, feature_input: torch.Tensor) -> torch.Tensor:
+        """ The forward function of MLP Net.
+
+        :param feature_input: input feature, shape=(bs, time_steps, input_size)
+
+        returns: output: the prediction, which is a tensor of shape (bs, 1)
+
+        """
+
+        # ---- Forward computing ---- #
+        hidden_x, _ = self.gru(feature_input)  # shape=(bs, time_steps, hidden_size)
+        last_step_hidden_x = hidden_x[:, -1, :]  # shape=(bs, hidden_size)
+        output = self.fc(last_step_hidden_x)  # shape=(bs, 1)
+
+        # ---- Return the result ---- #
+        return output
+
+
+if __name__ == "__main__":  # A demo using GRU_Net
+    bath_size, time_steps, feature_dim = 64, 1, 167
+    hidden_size = 64
+    feature = torch.ones((bath_size, time_steps, feature_dim))
+    dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = GRU_Net(input_size=time_steps * feature_dim, hidden_size=64, device=dev)
+    out = model(feature)
+    print(out.shape)
