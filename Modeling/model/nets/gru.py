@@ -35,7 +35,7 @@ class GRU_Net(nn.Module):
 
         # ---- Log the info of Multi-Grained GRU ---- #
         logging.info(
-            f"|||| Using Multi-Grained GRU Now ! input_size={input_size}, "
+            f"|||| Using GRU Now ! input_size={input_size}, "
             f"hidden_size={hidden_size}, num_layers={num_layers}, dropout_ratio={dropout}||||"
         )
 

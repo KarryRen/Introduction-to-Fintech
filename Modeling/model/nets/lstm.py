@@ -35,7 +35,7 @@ class LSTM_Net(nn.Module):
 
         # ---- Log the info of Multi-Grained LSTM ---- #
         logging.info(
-            f"|||| Using Multi-Grained LSTM Now ! input_size={input_size}, "
+            f"|||| Using LSTM Now ! input_size={input_size}, "
             f"hidden_size={hidden_size}, num_layers={num_layers}, dropout_ratio={dropout}||||"
         )
 
