@@ -48,9 +48,9 @@ def os_train_valid_model(root_save_path: str) -> None:
 
     # ---- Construct the model and transfer device, while making loss and optimizer ---- #
     if config.MODEL == "MLP":
-        model = MLP_Net(input_size=config.FACTOR_NUM, out_size=1, device=device)
+        model = MLP_Net(input_size=config.FACTOR_NUM * config.TIME_STEPS, out_size=1, device=device)
     elif config.MODEL == "Big_MLP":
-        model = Big_MLP_Net(input_size=config.FACTOR_NUM, out_size=1, device=device)
+        model = Big_MLP_Net(input_size=config.FACTOR_NUM * config.TIME_STEPS, out_size=1, device=device)
     elif config.MODEL == "Conv":
         model = Conv_Net(device=device)
     elif config.MODEL == "GRU":
@@ -198,7 +198,7 @@ def os_pred_model(root_save_path: str) -> None:
             last_step = now_step
 
     # ---- Return os result ---- #
-    print(
+    logging.info(
         f"{preds_overall_stock.shape[0]} samples: "
         f"R2={r2_score(y_true=labels_overall_stock.cpu().numpy(), y_pred=preds_overall_stock.cpu().numpy())}, "
         f"CORR={corr_score(y_true=labels_overall_stock.cpu().numpy(), y_pred=preds_overall_stock.cpu().numpy())},"

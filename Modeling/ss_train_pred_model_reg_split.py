@@ -44,19 +44,19 @@ def ss_train_valid_model(stock_file_name: str, root_save_path: str) -> None:
 
     # ---- Make the dataset and dataloader ---- #
     train_dataset = FactoDataset(root_path=config.FACTOR_DATA_PATH, time_steps=config.TIME_STEPS, stock_file_list=[stock_file_name],
-                                 data_type="Train")
+                                 data_type="train")
     train_loader = data.DataLoader(dataset=train_dataset, batch_size=config.BATCH_SIZE, shuffle=True)  # the train dataloader
     valid_dataset = FactoDataset(root_path=config.FACTOR_DATA_PATH, time_steps=config.TIME_STEPS, stock_file_list=[stock_file_name],
-                                 data_type="Valid")
+                                 data_type="valid")
     valid_loader = data.DataLoader(dataset=valid_dataset, batch_size=config.BATCH_SIZE, shuffle=False)  # the valid dataloader
     logging.info(f"Train dataset: length = {len(train_dataset)}")
     logging.info(f"Valid dataset: length = {len(valid_dataset)}")
 
     # ---- Construct the model and transfer device, while making loss and optimizer ---- #
     if config.MODEL == "MLP":
-        model = MLP_Net(input_size=config.FACTOR_NUM, out_size=1, device=device)
+        model = MLP_Net(input_size=config.FACTOR_NUM * config.TIME_STEPS, out_size=1, device=device)
     elif config.MODEL == "Big_MLP":
-        model = Big_MLP_Net(input_size=config.FACTOR_NUM, out_size=1, device=device)
+        model = Big_MLP_Net(input_size=config.FACTOR_NUM * config.TIME_STEPS, out_size=1, device=device)
     elif config.MODEL == "Conv":
         model = Conv_Net(device=device)
     elif config.MODEL == "GRU":
@@ -193,7 +193,7 @@ def ss_pred_model(stock_file_name: str, root_save_path: str):
     logging.info(f"***************** In device {device}  *****************")
 
     # ---- Make the dataset and dataloader ---- #
-    test_dataset = FactoDataset(root_path=config.FACTOR_DATA_PATH, time_steps=config.TIME_STEPS, stock_file_list=[stock_file_name], data_type="Test")
+    test_dataset = FactoDataset(root_path=config.FACTOR_DATA_PATH, time_steps=config.TIME_STEPS, stock_file_list=[stock_file_name], data_type="test")
     test_loader = data.DataLoader(dataset=test_dataset, batch_size=config.BATCH_SIZE, shuffle=False)  # the valid dataloader
     logging.info(f"Test dataset: length = {len(test_dataset)}")
     preds_one_stock = torch.zeros(len(test_dataset)).to(device=device)
@@ -226,32 +226,29 @@ if __name__ == "__main__":
     # fix the random seed
     fix_random_seed(seed=config.RANDOM_SEED)
     # build up the PATH
-    SAVE_PATH = f"exp_split_ss_reg/rs_{config.RANDOM_SEED}"
+    SAVE_PATH = f"exp_ss_reg_split/rs_{config.RANDOM_SEED}"
     LOG_FILE = f"{SAVE_PATH}/log_file.log"
     # build up the save directory of the PATH
     os.makedirs(SAVE_PATH, exist_ok=True)
     # construct the train&valid log file
     logging.basicConfig(filename=LOG_FILE, format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
     stock_file_list = sorted(os.listdir(f"{config.FACTOR_DATA_PATH}/lag_{config.TIME_STEPS}"))
-    i = 1
 
     # ---- Step 1. Train & Valid model ---- #
-    for stock_file in stock_file_list[i:i + 1]:
+    for stock_file in stock_file_list:
         ss_train_valid_model(stock_file_name=stock_file, root_save_path=SAVE_PATH)
-        break
 
     # ---- Step 2. Pred model ---- #
     # do the pred
     ss_pred_array_list, ss_label_array_list = [], []  # define empty list
-    for stock_file in stock_file_list[i:i + 1]:
+    for stock_file in stock_file_list:
         ss_pred_array, ss_label_array = ss_pred_model(stock_file_name=stock_file, root_save_path=SAVE_PATH)
         ss_pred_array_list.append(ss_pred_array)
         ss_label_array_list.append(ss_label_array)
-        break
     # do the concat
     all_pred_array = np.concatenate(ss_pred_array_list, axis=0)
     all_label_array = np.concatenate(ss_label_array_list, axis=0)
-    print(
+    logging.info(
         f"{all_pred_array.shape[0]} samples: "
         f"R2={r2_score(y_true=all_label_array, y_pred=all_pred_array)}, "
         f"CORR={corr_score(y_true=all_label_array, y_pred=all_pred_array)},"

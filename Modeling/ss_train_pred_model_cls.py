@@ -52,9 +52,9 @@ def ss_train_valid_model(stock_file_name: str, root_save_path: str) -> None:
 
     # ---- Construct the model and transfer device, while making loss and optimizer ---- #
     if config.MODEL == "MLP":
-        model = MLP_Net(input_size=config.FACTOR_NUM, device=device)
+        model = MLP_Net(input_size=config.FACTOR_NUM * config.TIME_STEPS, device=device)
     elif config.MODEL == "Big_MLP":
-        model = Big_MLP_Net(input_size=config.FACTOR_NUM, device=device)
+        model = Big_MLP_Net(input_size=config.FACTOR_NUM * config.TIME_STEPS, device=device)
     elif config.MODEL == "Conv":
         model = Conv_Net(device=device)
     elif config.MODEL == "GRU":
@@ -217,25 +217,22 @@ if __name__ == "__main__":
     logging.basicConfig(filename=LOG_FILE, format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
     stock_file_list = sorted(os.listdir(f"{config.FACTOR_DATA_PATH}/lag_{config.TIME_STEPS}"))
 
-    i = 1
     # ---- Step 1. Train & Valid model ---- #
-    for stock_file in stock_file_list[i:i + 1]:
+    for stock_file in stock_file_list:
         ss_train_valid_model(stock_file_name=stock_file, root_save_path=SAVE_PATH)
-        break
 
     # ---- Step 2. Pred model ---- #
     # do the pred
     ss_pred_array_list, ss_label_array_list = [], []  # define empty list
-    for stock_file in stock_file_list[i:i + 1]:
+    for stock_file in stock_file_list:
         ss_pred_array, ss_label_array = ss_pred_model(stock_file_name=stock_file, root_save_path=SAVE_PATH)
         ss_pred_array_list.append(ss_pred_array)
         ss_label_array_list.append(ss_label_array)
-        break
     # do the concat
     all_pred_array = np.concatenate(ss_pred_array_list, axis=0)
     all_label_array = np.concatenate(ss_label_array_list, axis=0)
     # compute the metrics
-    print(
+    logging.info(
         f"{len(stock_file_list)} overall stocks, {all_pred_array.shape[0]} samples: "
         f"ACC={metrics.accuracy_score(y_true=all_label_array, y_pred=all_pred_array)}, "
         f"F1={metrics.f1_score(y_true=all_label_array, y_pred=all_pred_array, average='macro')}"

@@ -47,7 +47,20 @@ def os_train_valid_model(root_save_path: str) -> None:
     logging.info(f"Valid dataset: length = {len(valid_dataset)}")
 
     # ---- Construct the model and transfer device, while making loss and optimizer ---- #
-    model = MLP_Net(input_size=config.FACTOR_NUM, device=device)
+    if config.MODEL == "MLP":
+        model = MLP_Net(input_size=config.FACTOR_NUM * config.TIME_STEPS, device=device)
+    elif config.MODEL == "Big_MLP":
+        model = Big_MLP_Net(input_size=config.FACTOR_NUM * config.TIME_STEPS, device=device)
+    elif config.MODEL == "Conv":
+        model = Conv_Net(device=device)
+    elif config.MODEL == "GRU":
+        model = GRU_Net(input_size=config.FACTOR_NUM, device=device)
+    elif config.MODEL == "LSTM":
+        model = LSTM_Net(input_size=config.FACTOR_NUM, device=device)
+    elif config.MODEL == "Transformer":
+        model = Transformer_Net(d_feat=config.FACTOR_NUM, device=device)
+    else:
+        raise ValueError(config.MODEL)
     # the loss function
     criterion = CE_Loss(reduction=config.LOSS_REDUCTION)
     # the optimizer
@@ -187,7 +200,7 @@ def os_pred_model(root_save_path: str) -> None:
             last_step = now_step
 
     # ---- Return os result ---- #
-    print(
+    logging.info(
         f"{preds_overall_stock.shape[0]} samples: "
         f"ACC={metrics.accuracy_score(y_true=labels_overall_stock.cpu().numpy(), y_pred=preds_overall_stock.cpu().numpy())}, "
         f"FA={metrics.f1_score(y_true=labels_overall_stock.cpu().numpy(), y_pred=preds_overall_stock.cpu().numpy(), average='micro')}"
