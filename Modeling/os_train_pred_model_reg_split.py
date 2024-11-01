@@ -231,6 +231,10 @@ def pred_for_each_stock(root_save_path: str) -> None:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     logging.info(f"***************** In device {device}  *****************")
 
+    # ---- Load the model ---- #
+    model, model_path = load_best_model(os_model_save_path, "valid_F1")
+    logging.info(f"Load best mode {model_path}")
+
     # ---- For loop to read ---- #
     final_pred_df = None
     stock_csv_list = sorted(os.listdir(f"{config.FACTOR_DATA_PATH}/test_csv"))
@@ -246,9 +250,6 @@ def pred_for_each_stock(root_save_path: str) -> None:
         logging.info(f"Test dataset: length = {len(test_dataset)}")
         preds_single_stock = torch.zeros(len(test_dataset)).to(device=device)
         labels_single_stock = torch.zeros(len(test_dataset)).to(device=device)
-        # load model
-        model, model_path = load_best_model(os_model_save_path, "valid_F1")
-        logging.info(f"Load best mode {model_path}")
         # predict
         last_step = 0
         with torch.no_grad():
@@ -269,7 +270,6 @@ def pred_for_each_stock(root_save_path: str) -> None:
             final_pred_df = stock_df
         else:
             final_pred_df = pd.merge(final_pred_df, stock_df, on="Date", how="outer")
-    print(final_pred_df.isnull().sum().sum())
     # final_pred_df.to_csv(f"20240102_20240529.csv", index=False)
 
 

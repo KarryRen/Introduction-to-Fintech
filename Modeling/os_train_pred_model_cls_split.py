@@ -133,7 +133,7 @@ def os_train_valid_model(root_save_path: str) -> None:
             y_true=valid_labels_one_epoch.cpu().numpy(), y_pred=valid_preds_one_epoch.cpu().numpy()
         )
         epoch_metric["valid_F1"][epoch] = metrics.f1_score(
-            y_true=valid_labels_one_epoch.cpu().numpy(), y_pred=valid_preds_one_epoch.cpu().numpy(), average="micro"
+            y_true=valid_labels_one_epoch.cpu().numpy(), y_pred=valid_preds_one_epoch.cpu().numpy(), average="macro"
         )
         # save model&model_config and metrics
         torch.save(model, f"{os_model_save_path}/model_pytorch_epoch_{epoch}")
@@ -203,7 +203,7 @@ def os_pred_model(root_save_path: str) -> None:
     logging.info(
         f"{preds_overall_stock.shape[0]} samples: "
         f"ACC={metrics.accuracy_score(y_true=labels_overall_stock.cpu().numpy(), y_pred=preds_overall_stock.cpu().numpy())}, "
-        f"FA={metrics.f1_score(y_true=labels_overall_stock.cpu().numpy(), y_pred=preds_overall_stock.cpu().numpy(), average='micro')}"
+        f"F1={metrics.f1_score(y_true=labels_overall_stock.cpu().numpy(), y_pred=preds_overall_stock.cpu().numpy(), average='macro')}"
     )
 
 

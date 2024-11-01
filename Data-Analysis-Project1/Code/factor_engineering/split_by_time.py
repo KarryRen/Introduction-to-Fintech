@@ -61,39 +61,39 @@ for stock in stock_list:
     stock_factors_df_normed_temp = stock_factors_df_normed_all[stock_factors_df_normed_all["Date"] >= "20230601"]
     stock_factors_df_normed_valid = stock_factors_df_normed_temp[stock_factors_df_normed_temp["Date"] < "20240101"]
     stock_factors_df_normed_test = stock_factors_df_normed_all[stock_factors_df_normed_all["Date"] >= "20240101"]
-    # --- do the lag
-    for split_type, stock_factors_df_normed in (
-            ("train", stock_factors_df_normed_train), ("valid", stock_factors_df_normed_valid), ("test", stock_factors_df_normed_test)
-    ):
-        # -- do the lag 1
-        slag_1_factor_array = np.zeros(shape=(len(stock_factors_df_normed), 1, 1 + len(factors_list)), dtype=np.float32)
-        slag_1_factor_array[:, 0, :] = np.array(stock_factors_df_normed[["Label"] + factors_list], dtype=np.float32)
-        slag_1_feature, slag_1_label = slag_1_factor_array[:, :, 1:], slag_1_factor_array[:, -1, 0:1]  # split the feature and label
-        assert slag_1_feature.dtype == np.float32 and slag_1_label.dtype == np.float32, "dtype ERROR !!"  # check dtype
-        # - save to the `.npz` file one by one
-        os.makedirs(f"{data_processed_split_path}/lag_1/{split_type}", exist_ok=True)
-        np.savez(f"{data_processed_split_path}/lag_1/{split_type}/{stock}.npz", feature=slag_1_feature, label=slag_1_label)
-        print(f"`{stock}`, {split_type}: lag_1 feature and label is saved successfully.")
-        # -- do the lag 2
-        slag_2_factor_array = np.zeros(shape=(len(stock_factors_df_normed) - 1, 2, 1 + len(factors_list)), dtype=np.float32)
-        slag_2_factor_array[:, 0, :] = np.array(stock_factors_df_normed[["Label"] + factors_list], dtype=np.float32)[:-1]
-        slag_2_factor_array[:, 1, :] = np.array(stock_factors_df_normed[["Label"] + factors_list], dtype=np.float32)[1:]
-        slag_2_feature, slag_2_label = slag_2_factor_array[:, :, 1:], slag_2_factor_array[:, -1, 0:1]  # split the feature and label
-        assert slag_2_feature.dtype == np.float32 and slag_2_label.dtype == np.float32, "dtype ERROR !!"  # check dtype
-        # - save to the `.npz` file one by one
-        os.makedirs(f"{data_processed_split_path}/lag_2/{split_type}", exist_ok=True)
-        np.savez(f"{data_processed_split_path}/lag_2/{split_type}/{stock}.npz", feature=slag_2_feature, label=slag_2_label)
-        print(f"`{stock}`, {split_type}: lag_2 feature and label is saved successfully.")
-        # --- do the lag 3
-        slag_3_factor_array = np.zeros(shape=(len(stock_factors_df_normed) - 2, 3, 1 + len(factors_list)), dtype=np.float32)
-        slag_3_factor_array[:, 0, :] = np.array(stock_factors_df_normed[["Label"] + factors_list], dtype=np.float32)[:-2]
-        slag_3_factor_array[:, 1, :] = np.array(stock_factors_df_normed[["Label"] + factors_list], dtype=np.float32)[1:-1]
-        slag_3_factor_array[:, 2, :] = np.array(stock_factors_df_normed[["Label"] + factors_list], dtype=np.float32)[2:]
-        slag_3_feature, slag_3_label = slag_3_factor_array[:, :, 1:], slag_3_factor_array[:, -1, 0:1]  # split the feature and label
-        assert slag_3_feature.dtype == np.float32 and slag_3_label.dtype == np.float32, "dtype ERROR !!"  # check dtype
-        # - save to the `.npz` file one by one
-        os.makedirs(f"{data_processed_split_path}/lag_3/{split_type}", exist_ok=True)
-        np.savez(f"{data_processed_split_path}/lag_3/{split_type}/{stock}.npz", feature=slag_3_feature, label=slag_3_label)
-        print(f"`{stock}`, {split_type}: lag_3 feature and label is saved successfully.")
+    # # --- do the lag
+    # for split_type, stock_factors_df_normed in (
+    #         ("train", stock_factors_df_normed_train), ("valid", stock_factors_df_normed_valid), ("test", stock_factors_df_normed_test)
+    # ):
+    #     # -- do the lag 1
+    #     slag_1_factor_array = np.zeros(shape=(len(stock_factors_df_normed), 1, 1 + len(factors_list)), dtype=np.float32)
+    #     slag_1_factor_array[:, 0, :] = np.array(stock_factors_df_normed[["Label"] + factors_list], dtype=np.float32)
+    #     slag_1_feature, slag_1_label = slag_1_factor_array[:, :, 1:], slag_1_factor_array[:, -1, 0:1]  # split the feature and label
+    #     assert slag_1_feature.dtype == np.float32 and slag_1_label.dtype == np.float32, "dtype ERROR !!"  # check dtype
+    #     # - save to the `.npz` file one by one
+    #     os.makedirs(f"{data_processed_split_path}/lag_1/{split_type}", exist_ok=True)
+    #     np.savez(f"{data_processed_split_path}/lag_1/{split_type}/{stock}.npz", feature=slag_1_feature, label=slag_1_label)
+    #     print(f"`{stock}`, {split_type}: lag_1 feature and label is saved successfully.")
+    #     # -- do the lag 2
+    #     slag_2_factor_array = np.zeros(shape=(len(stock_factors_df_normed) - 1, 2, 1 + len(factors_list)), dtype=np.float32)
+    #     slag_2_factor_array[:, 0, :] = np.array(stock_factors_df_normed[["Label"] + factors_list], dtype=np.float32)[:-1]
+    #     slag_2_factor_array[:, 1, :] = np.array(stock_factors_df_normed[["Label"] + factors_list], dtype=np.float32)[1:]
+    #     slag_2_feature, slag_2_label = slag_2_factor_array[:, :, 1:], slag_2_factor_array[:, -1, 0:1]  # split the feature and label
+    #     assert slag_2_feature.dtype == np.float32 and slag_2_label.dtype == np.float32, "dtype ERROR !!"  # check dtype
+    #     # - save to the `.npz` file one by one
+    #     os.makedirs(f"{data_processed_split_path}/lag_2/{split_type}", exist_ok=True)
+    #     np.savez(f"{data_processed_split_path}/lag_2/{split_type}/{stock}.npz", feature=slag_2_feature, label=slag_2_label)
+    #     print(f"`{stock}`, {split_type}: lag_2 feature and label is saved successfully.")
+    #     # --- do the lag 3
+    #     slag_3_factor_array = np.zeros(shape=(len(stock_factors_df_normed) - 2, 3, 1 + len(factors_list)), dtype=np.float32)
+    #     slag_3_factor_array[:, 0, :] = np.array(stock_factors_df_normed[["Label"] + factors_list], dtype=np.float32)[:-2]
+    #     slag_3_factor_array[:, 1, :] = np.array(stock_factors_df_normed[["Label"] + factors_list], dtype=np.float32)[1:-1]
+    #     slag_3_factor_array[:, 2, :] = np.array(stock_factors_df_normed[["Label"] + factors_list], dtype=np.float32)[2:]
+    #     slag_3_feature, slag_3_label = slag_3_factor_array[:, :, 1:], slag_3_factor_array[:, -1, 0:1]  # split the feature and label
+    #     assert slag_3_feature.dtype == np.float32 and slag_3_label.dtype == np.float32, "dtype ERROR !!"  # check dtype
+    #     # - save to the `.npz` file one by one
+    #     os.makedirs(f"{data_processed_split_path}/lag_3/{split_type}", exist_ok=True)
+    #     np.savez(f"{data_processed_split_path}/lag_3/{split_type}/{stock}.npz", feature=slag_3_feature, label=slag_3_label)
+    #     print(f"`{stock}`, {split_type}: lag_3 feature and label is saved successfully.")
     # save to csv
     stock_factors_df_normed_test.to_csv(f"{data_root_path}/processed_factors/test_csv/{stock}.csv", index=False)
