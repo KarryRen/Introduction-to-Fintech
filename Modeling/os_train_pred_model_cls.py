@@ -196,7 +196,7 @@ def os_pred_model(root_save_path: str) -> None:
     logging.info(
         f"{preds_overall_stock.shape[0]} samples: "
         f"ACC={metrics.accuracy_score(y_true=labels_overall_stock.cpu().numpy(), y_pred=preds_overall_stock.cpu().numpy())}, "
-        f"FA={metrics.f1_score(y_true=labels_overall_stock.cpu().numpy(), y_pred=preds_overall_stock.cpu().numpy(), average='macro')}"
+        f"F1={metrics.f1_score(y_true=labels_overall_stock.cpu().numpy(), y_pred=preds_overall_stock.cpu().numpy(), average='macro')}"
     )
 
 
