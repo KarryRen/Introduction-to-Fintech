@@ -1,4 +1,4 @@
-# Introduction-to-Fintech-DAPs
+# Introduction-to-Fintech
 The two Data Analysis Projects of Introduction to Fintech Class.
 
 ```python
